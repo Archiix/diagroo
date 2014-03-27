@@ -5,7 +5,8 @@
 		<title>Diagroo - Relational diagram to view an IT infrastructure</title>
 		
 		<!-- CSS -->
-		<link rel="stylesheet" type="text/css" href="src/css/example.css">
+		<link type="text/css" rel="stylesheet" href="draw2d_4_3_2/css/contextmenu.css" />
+		<link rel="stylesheet" type="text/css" href="src/css/example.css" />
 		
 		<!-- JavaScript -->
 		<!-- Draw2D Touch -->
@@ -418,12 +419,18 @@
         <script src="draw2d_4_3_2/src/storage/TideSDKStorage.js"> </script>
 		
 		<!-- My JavaScript -->
+		<script type="text/javascript" src="src/javascript/Draw2DItem.js"></script>
+		<script type="text/javascript" src="src/javascript/Draw2DConnector.js"></script>
+		
 		<script type="text/javascript">
 		$(window).load(function() {
 			var canvas = new draw2d.Canvas("gfx_holder");
 			
 			$("#newItemButton").click(function() {
 				console.log("#newItemButton click event");
+				
+				var item = new Draw2DItem(100, 100, "item1");
+				canvas.addFigure(item, 10, 10);
 			});
 		});
 		</script>
