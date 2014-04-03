@@ -1,6 +1,6 @@
 
 function Model(id, name) {
-	this.type = "model";
 	this._id = id;
+	this.type = "model";
 	this.name = name;
 }

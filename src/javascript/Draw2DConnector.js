@@ -24,6 +24,7 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		this.faceIndex = faceIndex;
 	},
 	
+	/*
 	getText: function() {
 		return this.label.getText();
 	},
@@ -31,6 +32,7 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 	setText: function(text) {
 		this.label.setText(text);
 	},
+	*/
 	
 	getLocator: function() {
 		return this.locator;
@@ -72,6 +74,9 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 				"delete": {name: "Delete", icon: ""}
 			}
 		});
+	},
+	
+	onDoubleClick: function() {
 	},
 	
 	createPort: function(portType) {

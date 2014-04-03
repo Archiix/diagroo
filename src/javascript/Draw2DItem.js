@@ -34,6 +34,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		
 		this.setMinWidth(this.minWidth);
 		this.setMinHeight(this.minHeight);
+		
+		this.setResizeable(false);
 	},
 	
 	getText: function() {
@@ -84,6 +86,9 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				"delete": {name: "Delete", icon: ""}
 			}
 		});
+	},
+	
+	onDoubleClick: function() {
 	},
 	
 	createConnector: function(faceIndex) {

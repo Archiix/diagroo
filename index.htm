@@ -6,7 +6,8 @@
 		
 		<!-- CSS -->
 		<link type="text/css" rel="stylesheet" href="draw2d_4_3_2/css/contextmenu.css" />
-		<link rel="stylesheet" type="text/css" href="src/css/example.css" />
+		<link type="text/css" rel="stylesheet" href="src/css/example.css" />
+		<link type="text/css" rel="stylesheet" href="src/css/bootstrap.min.css" />
 		
 		<!-- JavaScript -->
 		<!-- Draw2D Touch -->
@@ -419,82 +420,145 @@
         <script src="draw2d_4_3_2/src/storage/TideSDKStorage.js"> </script>
 		
 		<!-- Javascript for CouchDB -->
-		<script src="http://diagroo.iriscouch.com/_utils/script/json2.js"></script>
-		<script src="http://diagroo.iriscouch.com/_utils/script/jquery.js?1.2.6"></script>
-		<script src="http://diagroo.iriscouch.com/_utils/script/jquery.couch.js"></script>
+		<script type="text/javascript" src="http://localhost:5984/_utils/script/json2.js"></script>
+		<script type="text/javascript" src="http://localhost:5984/_utils/script/jquery.js"></script>
+		<script type="text/javascript" src="http://localhost:5984/_utils/script/jquery.couch.js"></script>
+		
+		<!-- JQuery for CouchDB API -->
+		<script type="text/javascript">
+			var couchDBJQuery = $.noConflict(true);
+		</script>
 		
 		<!-- My JavaScript -->
 		<script type="text/javascript" src="src/javascript/Styles.js"></script>
 		<script type="text/javascript" src="src/javascript/Draw2DItem.js"></script>
 		<script type="text/javascript" src="src/javascript/Draw2DConnector.js"></script>
+		<script type="text/javascript" src="src/javascript/Draw2DConnection.js"></script>
 		<script type="text/javascript" src="src/javascript/Model.js"></script>
+		<script type="text/javascript" src="src/javascript/Item.js"></script>
+		<script type="text/javascript" src="src/javascript/Connector.js"></script>
+		<script type="text/javascript" src="src/javascript/Connection.js"></script>
+		<script type="text/javascript" src="src/javascript/Queries.js"></script>
 		
 		<script type="text/javascript">
 		$(window).load(function() {
+			
+			success = function(msg) { $("#success").text(msg); };
+			error = function(msg) { $("#error").text(msg); };
+			clear = function() { success(""); error(""); };
+			
+			var items = new draw2d.util.ArrayList();
+			var connections = new draw2d.util.ArrayList();
+			
+			draw2d.Connection.createConnection=function(sourcePort, targetPort) {
+				var newDraw2DConnection = new Draw2DConnection();
+				
+				var inputConnectorId = sourcePort.parent.id;
+				var outputConnectorId = targetPort.parent.id;
+				
+				var newConnection = new Connection(newDraw2DConnection.id, inputConnectorId, outputConnectorId);
+				connections.add(newConnection);
+				
+				// return my special kind of connection
+				return newDraw2DConnection;
+			};
+			
 			var canvas = new draw2d.Canvas("gfx_holder");
 			
+			// Add a new Item (x, y) = (10, 10), (w, h) = (100, 100)
 			$("#newItemButton").click(function() {
 				console.log("#newItemButton click event");
 				
-				var item = new Draw2DItem(100, 100, "item");
-				canvas.addFigure(item, 10, 10);
+				var newItem = new Draw2DItem(100, 100, "item");
+				canvas.addFigure(newItem, 10, 10);
+				
+				items.add(newItem);
 			});
 			
-			$("#testWithIrisCouchButton").click(function() {
-				var json = { "a": "ceci est mon premier test", "_id": "ceci_est_mon_id" }
-				$.couch.urlPrefix = "http://localhost:5984";
-				var uuid = $.couch.newUUID();
-				console.log("uuid: " + uuid);
-				var model = new Model(uuid, "model_name");
-				$.couch.info({
+			/* Save the model + save all Item, Connector and Connection */
+			$("#saveModel").click(function() {
+				clear();
+				var modelName = $("#modelNameInput").val();
+				
+				couchDBJQuery.couch.db("diagroo").view("model/getModelByName", {
 					success: function(data) {
 						console.log(data);
-					}
-				});
-				// var newDocument = JSON.stringify(json);
-				$.couch.db("diagroo").saveDoc(model, {
-					success: function(data) {
-						console.log(data);
+						if (data.rows.length == 0) {
+							success("Model doesn't exists !");
+							var uuid = couchDBJQuery.couch.newUUID();
+							var newModel = new Model(uuid, modelName);
+							couchDBJQuery.couch.db("diagroo").saveDoc(newModel, {
+								success: function(data) {
+									console.log(data);
+									// save Item, Connector and Connection
+									for (var i = 0; i < items.getSize(); i++) {
+										var currentDraw2DItem = items.get(i);
+										var draw2DConnectors = currentDraw2DItem.connectors;
+										
+										var currentItem = new Item(currentDraw2DItem.id, currentDraw2DItem.getText());
+										save(currentItem);
+										
+										for (var j = 0; j < draw2DConnectors.getSize(); j++) {
+											var current2DConnectors = draw2DConnectors.get(j);
+											
+											var connector = new Connector(current2DConnectors.id, currentDraw2DItem.id, current2DConnectors.faceIndex);
+											save(connector);
+										}
+									}
+									for (var i = 0; i < connections.getSize(); i++) {
+										save(connections.get(i));
+									}
+									// end save Item, Connector and Connection
+								},
+								error: function(status) {
+									console.log(status);
+								}
+							});
+						} else {
+							error("Model already exists !");
+						}
 					},
 					error: function(status) {
 						console.log(status);
-					}
-				});
-				$.couch.db("diagroo").openDoc("model_1", {
-					success: function(data) {
-						console.log(data);
 					},
-					error: function(status) {
-						console.log(status);
-					}
+					key: modelName
 				});
-				$.couch.db("diagroo").view("model/getAllModels", {
-					success: function(data) {
-						console.log(data);
-					},
-					error: function(status) {
-						console.log(status);
-					}
-				});
-				$.couch.db("diagroo").view("model/getModelsByName", {
-					success: function(data) {
-						console.log("query avec paramètre");
-						console.log(data);
-					},
-					error: function(status) {
-						console.log(status);
-					},
-					key: "model_name"
-				});
+			});
+			
+			/* Save the view + save all ItemView */
+			$("#saveView").click(function() {
 			});
 		});
 		</script>
-		
+	
 	</head>
 	<body>
-		<div>Diagroo - Relational diagram to view an IT infrastructure</div>
-		<button id="newItemButton">New Item</button>
-		<button id="testWithIrisCouchButton">Test With Iris Couch</button>
-		<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="width: 100%; height: 500px; -webkit-tap-highlight-color: rgba(0,0,0,0);"></div>
+		
+		<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="#">diagroo</a>
+			</div>
+			<div class="collapse navbar-collapse">
+				<ul class="nav navbar-nav">
+					<li class="active"><a href="#">Editor 2D</a></li>
+				</ul>
+			</div><!--/.nav-collapse -->
+		</div>
+		
+		<div style="margin: 10px">
+			<h2>diagroo - Relational diagram to view an IT infrastructure</h2>
+			<button id="newItemButton">New Item</button>
+			<button id="saveModel">Save Model</button>
+			<input type="text" id="modelNameInput" value="model name" />
+			<button id="saveView">Save View</button>
+			<input type="text" id="viewNameInput" value="view name" />
+			<span id="success" style="color: green"></span>
+			<span id="error" style="color: red"></span>
+		</div>
+		<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 500px; -webkit-tap-highlight-color: rgba(0,0,0,0);"></div>
 	</body>
 </html>
