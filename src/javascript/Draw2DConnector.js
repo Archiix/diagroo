@@ -22,6 +22,7 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		
 		this.locator = locator;
 		this.faceIndex = faceIndex;
+		this.type = ""; // "input" or "output"
 	},
 	
 	/*
@@ -84,10 +85,12 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		switch (portType) {
 			// input port
 			case 0:
+				this.type = "input";
 				port = new draw2d.InputPort();
 				break;
 			// output port
 			case 1:
+				this.type = "output";
 				port = new draw2d.OutputPort();
 				break;
 			default:

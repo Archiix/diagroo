@@ -47,45 +47,7 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	},
 	
 	onContextMenu: function(x, y) {
-		$.contextMenu({
-			selector: 'body',
-			events: {
-				hide: function() {
-					$.contextMenu('destroy');
-				}
-			},
-			callback: $.proxy(function(key, options) {
-				switch(key) {
-					case "newConnectorN":
-						this.createConnector(0);
-						break;
-					case "newConnectorS":
-						this.createConnector(1);
-						break;
-					case "newConnectorE":
-						this.createConnector(2);
-						break;
-					case "newConnectorW":
-						this.createConnector(3);
-						break;
-					case "delete":
-						this.getCanvas().removeFigure(this);
-						break;
-					default:
-						break;
-				}
-			}, this),
-			x: x,
-			y: y,
-			items: {
-				"newConnectorN": {name: "New Connector (North)", icon: ""},
-				"newConnectorS" : {name: "New Connector (South)", icon: ""},
-				"newConnectorE" : {name: "New Connector (East)", icon: ""},
-				"newConnectorW" : {name: "New Connector (West)", icon: ""},
-				"sep1": "---------",
-				"delete": {name: "Delete", icon: ""}
-			}
-		});
+		contextMenuItem(this, x, y);
 	},
 	
 	onDoubleClick: function() {
@@ -124,6 +86,37 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		}
 		
 		this.updateLayout();
+	},
+	
+	addConnector: function(connector) {
+		
+		switch (connector.faceIndex) {
+			case 0:
+				this.addFigure(connector, connector.locator);
+				this.connectors.add(connector);
+				this.connectorsN.add(connector);
+				break;
+			case 1:
+				this.addFigure(connector, connector.locator);
+				this.connectors.add(connector);
+				this.connectorsS.add(connector);
+				break;
+			case 2:
+				this.addFigure(connector, connector.locator);
+				this.connectors.add(connector);
+				this.connectorsE.add(connector);
+				break;
+			case 3:
+				this.addFigure(connector, connector.locator);
+				this.connectors.add(connector);
+				this.connectorsW.add(connector);
+				break;
+			default:
+				break;
+		}
+		
+		this.updateLayout();
+		
 	},
 	
 	updateLayout: function() {

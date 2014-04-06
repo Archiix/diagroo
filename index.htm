@@ -439,18 +439,25 @@
 		<script type="text/javascript" src="src/javascript/Connector.js"></script>
 		<script type="text/javascript" src="src/javascript/Connection.js"></script>
 		<script type="text/javascript" src="src/javascript/Queries.js"></script>
+		<script type="text/javascript" src="src/javascript/Converter.js"></script>
 		
 		<script type="text/javascript">
 		$(window).load(function() {
 			
+			/* globals variables declaration */
 			success = function(msg) { $("#success").text(msg); };
 			error = function(msg) { $("#error").text(msg); };
 			clear = function() { success(""); error(""); };
 			
-			var items = new draw2d.util.ArrayList();
-			var connections = new draw2d.util.ArrayList();
+			/* var */ converter = new ConverterJSON();
 			
-			draw2d.Connection.createConnection=function(sourcePort, targetPort) {
+			/* var */ items = new draw2d.util.ArrayList();
+			/* var */ connections = new draw2d.util.ArrayList();
+			
+			/* var */ canvas = new draw2d.Canvas("gfx_holder");
+			/* end globals variables declaration */
+			
+			draw2d.Connection.createConnection = function(sourcePort, targetPort) {
 				var newDraw2DConnection = new Draw2DConnection();
 				
 				var inputConnectorId = sourcePort.parent.id;
@@ -462,8 +469,6 @@
 				// return my special kind of connection
 				return newDraw2DConnection;
 			};
-			
-			var canvas = new draw2d.Canvas("gfx_holder");
 			
 			// Add a new Item (x, y) = (10, 10), (w, h) = (100, 100)
 			$("#newItemButton").click(function() {
@@ -477,63 +482,61 @@
 			
 			/* Save the model + save all Item, Connector and Connection */
 			$("#saveModel").click(function() {
+				// clear log message
 				clear();
 				var modelName = $("#modelNameInput").val();
 				
-				couchDBJQuery.couch.db("diagroo").view("model/getModelByName", {
-					success: function(data) {
-						console.log(data);
-						if (data.rows.length == 0) {
-							success("Model doesn't exists !");
-							var uuid = couchDBJQuery.couch.newUUID();
-							var newModel = new Model(uuid, modelName);
-							couchDBJQuery.couch.db("diagroo").saveDoc(newModel, {
-								success: function(data) {
-									console.log(data);
-									// save Item, Connector and Connection
-									for (var i = 0; i < items.getSize(); i++) {
-										var currentDraw2DItem = items.get(i);
-										var draw2DConnectors = currentDraw2DItem.connectors;
-										
-										var currentItem = new Item(currentDraw2DItem.id, currentDraw2DItem.getText());
-										save(currentItem);
-										
-										for (var j = 0; j < draw2DConnectors.getSize(); j++) {
-											var current2DConnectors = draw2DConnectors.get(j);
-											
-											var connector = new Connector(current2DConnectors.id, currentDraw2DItem.id, current2DConnectors.faceIndex);
-											save(connector);
-										}
-									}
-									for (var i = 0; i < connections.getSize(); i++) {
-										save(connections.get(i));
-									}
-									// end save Item, Connector and Connection
-								},
-								error: function(status) {
-									console.log(status);
-								}
-							});
-						} else {
-							error("Model already exists !");
-						}
-					},
-					error: function(status) {
-						console.log(status);
-					},
-					key: modelName
-				});
+				saveUpdateModel(modelName, items, connections); // SaveUpdateModelGUI.js
 			});
 			
 			/* Save the view + save all ItemView */
 			$("#saveView").click(function() {
 			});
+			
+			/* Get all models + get all items from model name */
+			$("#getModelsButton").click(function() {
+				
+				getModels($("#modelsSelect"));
+				
+			});
+			
+			/* Get all items from a model name */
+			$("#modelsSelect").click(function() {
+				
+				var modelName = $("#modelsSelect option:selected").val();
+				if (modelName) {
+					getItems(modelName, $("#itemsSelect"));
+				}
+				
+			});
+			
+			$("#itemsSelect").dblclick(function() {
+				
+				var itemId = $("#itemsSelect option:selected").val();
+				if (itemId) {
+					couchDBJQuery.couch.db("diagroo").openDoc(itemId, {
+						success: function(data) {
+							var itemDraw2D = converter.convertItem(data);
+							canvas.addFigure(itemDraw2D, 10, 10);
+						},
+						error: function(status) {
+							console.log(status);
+						}
+					});
+				}
+				
+			});
 		});
 		</script>
-	
+		
+		<!-- GUI + CouchDB calls -->
+		<script type="text/javascript" src="src/javascript/SaveUpdateModelGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/GetModelsAndItemsGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/ContextMenuItemGUI.js"></script>
+		
 	</head>
 	<body>
-		
+		<!-- menu bar -->
 		<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 			<div class="navbar-header">
 				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -548,7 +551,7 @@
 				</ul>
 			</div><!--/.nav-collapse -->
 		</div>
-		
+		<!-- menu bar end -->
 		<div style="margin: 10px">
 			<h2>diagroo - Relational diagram to view an IT infrastructure</h2>
 			<button id="newItemButton">New Item</button>
@@ -558,6 +561,22 @@
 			<input type="text" id="viewNameInput" value="view name" />
 			<span id="success" style="color: green"></span>
 			<span id="error" style="color: red"></span>
+			<table style="margin-top: 10px;  border-collapse: separate; border-spacing: 5px 8px;">
+				<tr>
+					<td><button id="getModelsButton">Get Models</button></td>
+					<td>
+						<select id="modelsSelect" multiple="multiple">
+							<option value="">No Models</option>
+						</select>
+					</td>
+					<td>Items</td>
+					<td>
+						<select id="itemsSelect" multiple="multiple">
+							<option value="">No Items</option>
+						</select>
+					</td>
+				</tr>
+			</table>
 		</div>
 		<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 500px; -webkit-tap-highlight-color: rgba(0,0,0,0);"></div>
 	</body>
