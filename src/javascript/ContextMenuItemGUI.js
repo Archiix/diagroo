@@ -25,7 +25,7 @@ function contextMenuItem(item, x, y) {
 				callback: function(key, options) {
 					switch(key) {
 						case "newConnectorN":
-							console.log(options);
+							// console.log(options);
 							item.createConnector(0);
 							break;
 						case "newConnectorS":
@@ -41,6 +41,7 @@ function contextMenuItem(item, x, y) {
 							item.getCanvas().removeFigure(item);
 							break;
 						default:
+							console.log('test');
 							console.log(tempOutputConnectors);
 							console.log(tempConnections);
 							console.log(tempInputConnectors);
@@ -50,6 +51,35 @@ function contextMenuItem(item, x, y) {
 							var connection = tempConnections[0];
 							var inputConnector = tempInputConnectors[0];
 							var otherItem = tempItems[0];
+							
+							// search otherItem
+							for (var i = 0; i < tempItems.length; i++) {
+								if (tempItems[i]._id == key) {
+									otherItem = tempItems[i];
+									break;
+								}
+							}
+							// search inputConnector
+							for (var i = 0; i < tempInputConnectors.length; i++) {
+								if (tempInputConnectors[i].itemId == key) {
+									inputConnector = tempInputConnectors[i];
+									break;
+								}
+							}
+							// search connection
+							for (var i = 0; i < tempConnections.length; i++) {
+								if (tempConnections[i].inputConnectorId == key) {
+									connection = tempConnections[i];
+									break;
+								}
+							}
+							// search outputConnector
+							for (var i = 0; i < tempOutputConnectors.length; i++) {
+								if (tempOutputConnectors[i] == item._id) {
+									outputConnector = tempOutputConnectors[i];
+									break;
+								}
+							}
 							
 							var outputDraw2DConnector = converter.convertConnector(outputConnector);
 							var inputDraw2DConnector = converter.convertConnector(inputConnector);
@@ -88,7 +118,7 @@ function contextMenuItem(item, x, y) {
 		success: function(data) {
 			outputConnectors = data.rows;
 			// console.log(item.getId());
-			// console.log(outputConnectors);
+			console.log(outputConnectors);
 			for (var i = 0; i < outputConnectors.length; i++) {
 				var outputConnector = outputConnectors[i].value;
 				// console.log(outputConnector._id);
@@ -109,7 +139,7 @@ function contextMenuItem(item, x, y) {
 									couchDBJQuery.couch.db("diagroo").openDoc(data.itemId, {
 										success: function(data) {
 											// add new actions to context menu
-											// console.log(data);
+											console.log(data.text);
 											tempItems.push(data);
 											
 											var newAction = {}
