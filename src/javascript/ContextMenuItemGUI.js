@@ -17,7 +17,86 @@ function contextMenuItem(item, x, y) {
 		"delete": {name: "Delete", icon: ""}
 	};
 	
-	// display the context menu
+	// reqest synchronous
+	$.ajaxSetup({async:false});
+	var result1 = $.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getOutputConnectorsByItem', {'key': '"' + item.getId() + '"'}).responseJSON;
+	outputConnectors = result1.rows;
+	for (var i = 0; i < outputConnectors.length; i++) {
+		var outputConnector = outputConnectors[i].value;
+		tempOutputConnectors.push(outputConnector);
+		var result2 = $.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseJSON;
+		outputConnections = result2.rows;
+		for (var j = 0; j < outputConnections.length; j++) {
+			var outputConnection = outputConnections[j].value;
+			tempConnections.push(outputConnection);
+			var result3 = $.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseJSON;
+			tempInputConnectors.push(result3);
+			var result4 = $.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseJSON;
+			tempItems.push(result4);
+			var newAction = {}
+			newAction[result4._id] = {name: result4.text, icon: ""};
+			$.extend(actions, newAction);
+		}
+	}
+	/*
+	couchDBJQuery.couch.db("diagroo").view("connector/getOutputConnectorsByItem", {
+		success: function(data) {
+			outputConnectors = data.rows;
+			// console.log(item.getId());
+			console.log(outputConnectors);
+			for (var i = 0; i < outputConnectors.length; i++) {
+				var outputConnector = outputConnectors[i].value;
+				// console.log(outputConnector._id);
+				tempOutputConnectors.push(outputConnector);
+				// get connections
+				couchDBJQuery.couch.db("diagroo").view("connection/getConnectionByOutputConnector", {
+					success: function(data) {
+						outputConnections = data.rows;
+						// console.log(outputConnections);
+						for (var j = 0; j < outputConnections.length; j++) {
+							var outputConnection = outputConnections[j].value;
+							tempConnections.push(outputConnection);
+							// get output connector
+							couchDBJQuery.couch.db("diagroo").openDoc(outputConnection.outputConnectorId, {
+								success: function(data) {
+									tempInputConnectors.push(data);
+									// get other item
+									couchDBJQuery.couch.db("diagroo").openDoc(data.itemId, {
+										success: function(data) {
+											// add new actions to context menu
+											console.log(data.text);
+											tempItems.push(data);
+											
+											var newAction = {}
+											newAction[data._id] = {name: data.text, icon: ""};
+											$.extend(actions, newAction);
+										},
+										error: function(status) {
+											console.log(status);
+										}
+									});
+								},
+								error: function(status) {
+									console.log(status);
+								}
+							});
+						}
+					},
+					error: function(status) {
+						console.log(status);
+					},
+					key: outputConnector._id
+				});
+			}
+		},
+		error: function(status) {
+			console.log(status);
+		},
+		key: item.getId()
+	});
+	*/
+	// end call synchronous
+	
 	$.contextMenu({
 		selector: 'body',
 		build: function($trigger, e) {
@@ -25,7 +104,6 @@ function contextMenuItem(item, x, y) {
 				callback: function(key, options) {
 					switch(key) {
 						case "newConnectorN":
-							// console.log(options);
 							item.createConnector(0);
 							break;
 						case "newConnectorS":
@@ -105,69 +183,12 @@ function contextMenuItem(item, x, y) {
 				items: actions
 			}
 		},
-		x: x,
-		y: y,
+		x: 0,
+		y: 0,
 		events: {
 			hide: function() {
 				$.contextMenu('destroy');
 			}
 		}
 	});
-	
-	couchDBJQuery.couch.db("diagroo").view("connector/getOutputConnectorsByItem", {
-		success: function(data) {
-			outputConnectors = data.rows;
-			// console.log(item.getId());
-			console.log(outputConnectors);
-			for (var i = 0; i < outputConnectors.length; i++) {
-				var outputConnector = outputConnectors[i].value;
-				// console.log(outputConnector._id);
-				tempOutputConnectors.push(outputConnector);
-				// get connections
-				couchDBJQuery.couch.db("diagroo").view("connection/getConnectionByOutputConnector", {
-					success: function(data) {
-						outputConnections = data.rows;
-						// console.log(outputConnections);
-						for (var j = 0; j < outputConnections.length; j++) {
-							var outputConnection = outputConnections[j].value;
-							tempConnections.push(outputConnection);
-							// get output connector
-							couchDBJQuery.couch.db("diagroo").openDoc(outputConnection.outputConnectorId, {
-								success: function(data) {
-									tempInputConnectors.push(data);
-									// get other item
-									couchDBJQuery.couch.db("diagroo").openDoc(data.itemId, {
-										success: function(data) {
-											// add new actions to context menu
-											console.log(data.text);
-											tempItems.push(data);
-											
-											var newAction = {}
-											newAction[data._id] = {name: data.text, icon: ""};
-											$.extend(actions, newAction);
-										},
-										error: function(status) {
-											console.log(status);
-										}
-									});
-								},
-								error: function(status) {
-									console.log(status);
-								}
-							});
-						}
-					},
-					error: function(status) {
-						console.log(status);
-					},
-					key: outputConnector._id
-				});
-			}
-		},
-		error: function(status) {
-			console.log(status);
-		},
-		key: item.getId()
-	});
-	
 }
