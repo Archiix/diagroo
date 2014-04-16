@@ -443,6 +443,36 @@
 		
 		<script type="text/javascript">
 		$(window).load(function() {
+			$("#testButton").click(function() {
+				/*
+				couchDBJQuery.couch.info({
+					success: function(data) {
+						console.log("info1");
+					},
+					async: false
+				});
+				*/
+				/*
+				couchDBJQuery.couch.db("diagroo").view("model/getModelByName", {
+					success: function(data) {
+						console.log(data);
+					},
+					error: function(status) {
+						console.log(status);
+					},
+					key: 'model1'
+				});
+				*/
+				
+				$.ajaxSetup({async:false});
+				// var result = $.get('https://diagroo.couchappy.com/diagroo/1528375e-1284-af74-ac1d-72e811e56acf');
+				// get a view
+				var result = $.get('https://diagroo.couchappy.com/diagroo/_design/model/_view/getModelByName', {'key': '"model1"'});
+				var res = JSON.stringify(result);
+				var resFinal = JSON.parse(res);
+				console.log(resFinal.responseJSON);
+				console.log("info2");
+			});
 			
 			/* globals variables declaration */
 			success = function(msg) { $("#success").text(msg); };
@@ -455,6 +485,12 @@
 			/* var */ connections = new draw2d.util.ArrayList();
 			
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
+			
+			var policy = new draw2d.policy.canvas.CanvasPolicy();
+			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
+				// console.log("Mouse click:" + x + "," + y);
+			}
+			canvas.installEditPolicy(policy);
 			/* end globals variables declaration */
 			
 			draw2d.Connection.createConnection = function(sourcePort, targetPort) {
@@ -554,6 +590,7 @@
 		<!-- menu bar end -->
 		<div style="margin: 10px">
 			<h2>diagroo - Relational diagram to view an IT infrastructure</h2>
+			<button id="testButton">test</button>
 			<button id="newItemButton">New Item</button>
 			<button id="saveModel">Save Model</button>
 			<input type="text" id="modelNameInput" value="model name" />
