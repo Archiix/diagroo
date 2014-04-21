@@ -17,25 +17,26 @@ function contextMenuItem(item, x, y) {
 		"delete": {name: "Delete", icon: ""}
 	};
 	
-	// reqest synchronous
 	$.ajaxSetup({async:false});
-	var result1 = $.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getOutputConnectorsByItem', {'key': '"' + item.getId() + '"'}).responseJSON;
-	outputConnectors = result1.rows;
-	for (var i = 0; i < outputConnectors.length; i++) {
-		var outputConnector = outputConnectors[i].value;
-		tempOutputConnectors.push(outputConnector);
-		var result2 = $.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseJSON;
-		outputConnections = result2.rows;
-		for (var j = 0; j < outputConnections.length; j++) {
-			var outputConnection = outputConnections[j].value;
-			tempConnections.push(outputConnection);
-			var result3 = $.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseJSON;
-			tempInputConnectors.push(result3);
-			var result4 = $.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseJSON;
-			tempItems.push(result4);
-			var newAction = {}
-			newAction[result4._id] = {name: result4.text, icon: ""};
-			$.extend(actions, newAction);
+	var result1 = $.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getOutputConnectorsByItem', {'key': '"' + item.getId() + '"'});
+	if (JSON.parse(result1.responseText).rows != 0) {
+		outputConnectors = result1.responseJSON.rows;
+		for (var i = 0; i < outputConnectors.length; i++) {
+			var outputConnector = outputConnectors[i].value;
+			tempOutputConnectors.push(outputConnector);
+			var result2 = $.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseJSON;
+			outputConnections = result2.rows;
+			for (var j = 0; j < outputConnections.length; j++) {
+				var outputConnection = outputConnections[j].value;
+				tempConnections.push(outputConnection);
+				var result3 = $.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseJSON;
+				tempInputConnectors.push(result3);
+				var result4 = $.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseJSON;
+				tempItems.push(result4);
+				var newAction = {}
+				newAction[result4._id] = {name: result4.text, icon: ""};
+				$.extend(actions, newAction);
+			}
 		}
 	}
 	/*

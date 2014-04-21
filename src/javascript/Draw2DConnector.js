@@ -118,5 +118,6 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 			default:
 				break;
 		}
+		return port;
 	}
 });

@@ -36,6 +36,42 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.setMinHeight(this.minHeight);
 		
 		this.setResizeable(false);
+		
+		this.northPort = new draw2d.InputPort('northPort');
+		this.southPort = new draw2d.InputPort('southPort');
+		this.westPort = new draw2d.InputPort('westPort');
+		this.eastPort = new draw2d.InputPort('eastPort');
+		this.addPort(northPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, 10));
+		this.addPort(southPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, this.getHeight() - 10));
+		this.addPort(westPort, new draw2d.layout.locator.XYAbsPortLocator(10, this.getHeight() / 2));
+		this.addPort(eastPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() - 10, this.getHeight() / 2));
+	},
+	
+	onNewEventForDiagroo: function(relatedPort, oldX, oldY) {
+		console.log("[Draw2DItem.js] onNewEventDiagroo");
+		if (relatedPort.name == "northPort") {
+			var newItem = new Draw2DItem(100, 100, "Item");
+			items.add(newItem);
+			canvas.addFigure(newItem, oldX - 50, oldY - 50);
+			
+			var connectorA = this.createConnector(0);
+			var connectorB = newItem.createConnector(1);
+			
+			this.updateLayout();
+			newItem.updateLayout();
+			
+			var portA = connectorA.createPort(0);
+			var portB = connectorB.createPort(1);
+			
+			var c = new Draw2DConnection();
+			c.setSource(portA);
+			c.setTarget(portB);
+			connections.add(c);
+			canvas.addFigure(c);
+		} else if (relatedPort.name == "southPort") {
+		} else if (relatedPort.name == "westPort") {
+		} else if (relatedPort.name == "eastPort") {
+		}
 	},
 	
 	getText: function() {
@@ -62,30 +98,32 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				this.addFigure(connector, locator);
 				this.connectors.add(connector);
 				this.connectorsN.add(connector);
+				return connector;
 				break;
 			case 1:
 				var connector = new Draw2DConnector(this.connectorHeight, this.connectorWidth, "c", locator, 1);
 				this.addFigure(connector, locator);
 				this.connectors.add(connector);
 				this.connectorsS.add(connector);
+				return connector;
 				break;
 			case 2:
 				var connector = new Draw2DConnector(this.connectorWidth, this.connectorHeight, "c", locator, 2);
 				this.addFigure(connector, locator);
 				this.connectors.add(connector);
 				this.connectorsE.add(connector);
+				return connector;
 				break;
 			case 3:
 				var connector = new Draw2DConnector(this.connectorWidth, this.connectorHeight, "c", locator, 3);
 				this.addFigure(connector, locator);
 				this.connectors.add(connector);
 				this.connectorsW.add(connector);
+				return connector;
 				break;
 			default:
 				break;
 		}
-		
-		this.updateLayout();
 	},
 	
 	addConnector: function(connector) {
