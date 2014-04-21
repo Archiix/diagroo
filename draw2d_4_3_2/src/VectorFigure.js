@@ -33,6 +33,11 @@ draw2d.VectorFigure = draw2d.shape.node.Node.extend({
         
         this._super( width, height);
     },
+	
+	// project diagroo
+	onNewEventForDiagroo: function(relatedPort, oldX, oldY){
+		console.log("[VectorFigure.js] onNewEventForDiagroo");
+	},
       
     
     /**

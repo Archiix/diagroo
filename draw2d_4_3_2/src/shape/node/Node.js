@@ -39,6 +39,11 @@ draw2d.shape.node.Node = draw2d.Figure.extend({
       
       this._super( width, height);
     },
+	
+	// project diagroo
+	onNewEventForDiagroo: function(relatedPort, oldX, oldY){
+		console.log("[Node.js] onNewEventForDiagroo");
+	},
     
 
     onDoubleClick:function(){

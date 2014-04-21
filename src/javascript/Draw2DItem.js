@@ -36,6 +36,21 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.setMinHeight(this.minHeight);
 		
 		this.setResizeable(false);
+		
+		// add CustomPort
+		// this.customPortNorth = new CustomPort("north");
+		// this.addPort(this.customPortNorth, new draw2d.layout.locator.TopLocator(this.customPortNorth));
+		/*var port = new draw2d.InputPort('test');
+		this.addPort(port, new draw2d.layout.locator.TopLocator(port));*/
+		var portNorthItem = new draw2d.HybridPort('portNorthItem');
+		this.addPort(portNorthItem, new draw2d.layout.locator.TopLocator(portNorthItem));
+	},
+	
+	onNewEventForDiagroo: function(relatedPort, oldX, oldY) {
+		console.log("[Draw2DItem.js] onNewEventDiagroo");
+		if (relatedPort.name == "portNorthItem") {
+			console.log("[Draw2DItem.js] create a new output connector, connection, input connector and a new item at oldX and oldY");
+		}
 	},
 	
 	getText: function() {
