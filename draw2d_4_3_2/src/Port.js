@@ -475,7 +475,7 @@ draw2d.Port = draw2d.shape.basic.Circle.extend({
       this.currentTarget = null;
 	  
 	  // project diagroo
-	  if(this.getParent()!==null && this.name == "portNorthItem"){
+	  if(this.getParent()!==null){
 		  console.log("[Port.js] onDragEnd");
 		  console.log("x: " + oldX + ", y: " + oldY);
 	  	  this.parent.onNewEventForDiagroo(this, oldX, oldY);
