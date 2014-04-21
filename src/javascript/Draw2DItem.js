@@ -41,10 +41,10 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.southPort = new draw2d.InputPort('southPort');
 		this.westPort = new draw2d.InputPort('westPort');
 		this.eastPort = new draw2d.InputPort('eastPort');
-		this.addPort(northPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, 10));
-		this.addPort(southPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, this.getHeight() - 10));
-		this.addPort(westPort, new draw2d.layout.locator.XYAbsPortLocator(10, this.getHeight() / 2));
-		this.addPort(eastPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() - 10, this.getHeight() / 2));
+		this.addPort(this.northPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, 10));
+		this.addPort(this.southPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, this.getHeight() - 10));
+		this.addPort(this.westPort, new draw2d.layout.locator.XYAbsPortLocator(10, this.getHeight() / 2));
+		this.addPort(this.eastPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() - 10, this.getHeight() / 2));
 	},
 	
 	onNewEventForDiagroo: function(relatedPort, oldX, oldY) {
