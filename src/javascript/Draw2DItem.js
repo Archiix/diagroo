@@ -37,10 +37,25 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		
 		this.setResizeable(false);
 		
+		var currentItem = this;
+		
 		this.northPort = new draw2d.InputPort('northPort');
+		this.northPort.onContextMenu = function() {
+			contextMenuItem(currentItem, 0, 0, 0);
+		};
 		this.southPort = new draw2d.InputPort('southPort');
+		this.southPort.onContextMenu = function() {
+			contextMenuItem(currentItem, 0, 0, 1);
+		};
 		this.westPort = new draw2d.InputPort('westPort');
+		this.westPort.onContextMenu = function() {
+			contextMenuItem(currentItem, 0, 0, 2);
+		};
 		this.eastPort = new draw2d.InputPort('eastPort');
+		this.eastPort.onContextMenu = function() {
+			contextMenuItem(currentItem, 0, 0, 3);
+		};
+
 		this.addPort(this.northPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, 10));
 		this.addPort(this.southPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, this.getHeight() - 10));
 		this.addPort(this.westPort, new draw2d.layout.locator.XYAbsPortLocator(10, this.getHeight() / 2));
@@ -49,29 +64,45 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	
 	onNewEventForDiagroo: function(relatedPort, oldX, oldY) {
 		console.log("[Draw2DItem.js] onNewEventDiagroo");
+		// 0 North
+		// 1 South
+		// 2 East
+		// 3 West
 		if (relatedPort.name == "northPort") {
-			var newItem = new Draw2DItem(100, 100, "Item");
-			items.add(newItem);
-			canvas.addFigure(newItem, oldX - 50, oldY - 50);
-			
-			var connectorA = this.createConnector(0);
-			var connectorB = newItem.createConnector(1);
-			
-			this.updateLayout();
-			newItem.updateLayout();
-			
-			var portA = connectorA.createPort(0);
-			var portB = connectorB.createPort(1);
-			
-			var c = new Draw2DConnection();
-			c.setSource(portA);
-			c.setTarget(portB);
-			connections.add(c);
-			canvas.addFigure(c);
+			this.addNewItem(oldX, oldY, 0, 1);
 		} else if (relatedPort.name == "southPort") {
+			this.addNewItem(oldX, oldY, 1, 0);
 		} else if (relatedPort.name == "westPort") {
+			this.addNewItem(oldX, oldY, 2, 3);
 		} else if (relatedPort.name == "eastPort") {
+			this.addNewItem(oldX, oldY, 3, 2);
 		}
+	},
+	
+	addNewItem: function(x, y, indexFaceA, indexFaceB) {
+		var newItem = new Draw2DItem(100, 100, "Item");
+		items.add(newItem);
+		canvas.addFigure(newItem, x - 50, y - 50);
+		
+		var connectorA = this.createConnector(indexFaceA);
+		var connectorB = newItem.createConnector(indexFaceB);
+		
+		this.updateLayout();
+		newItem.updateLayout();
+		
+		var portA = connectorA.createPort(1);
+		var portB = connectorB.createPort(0);
+		
+		var c = new Draw2DConnection();
+		c.setSource(portA);
+		c.setTarget(portB);
+		canvas.addFigure(c);
+				
+		var newConnection = new Connection(c.id, connectorA.id, connectorB.id);
+		connections.add(newConnection);
+		
+		this.repaint();
+		newItem.repaint();
 	},
 	
 	getText: function() {
@@ -83,7 +114,7 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	},
 	
 	onContextMenu: function(x, y) {
-		contextMenuItem(this, x, y);
+		// contextMenuItem(this, x, y);
 	},
 	
 	onDoubleClick: function() {

@@ -22,7 +22,7 @@ function saveUpdateModel(modelName, items, connections) {
 							for (var j = 0; j < draw2DConnectors.getSize(); j++) {
 								var current2DConnectors = draw2DConnectors.get(j);
 								
-								var connector = new Connector(current2DConnectors.id, currentDraw2DItem.id, current2DConnectors.faceIndex, current2DConnectors.type);
+								var connector = new Connector(current2DConnectors.id, currentDraw2DItem.id, /* current2DConnectors.faceIndex, */ current2DConnectors.type);
 								save(connector);
 							}
 						}
