@@ -1,5 +1,5 @@
 
-function contextMenuItem(item, x, y) {
+function contextMenuItem(item, x, y, faceIndex) {
 
 	var tempOutputConnectors = new Array();
 	var tempConnections = new Array();
@@ -18,20 +18,22 @@ function contextMenuItem(item, x, y) {
 	};
 	
 	$.ajaxSetup({async:false});
-	var result1 = $.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getOutputConnectorsByItem', {'key': '"' + item.getId() + '"'});
-	if (JSON.parse(result1.responseText).rows != 0) {
-		outputConnectors = result1.responseJSON.rows;
+	console.log(item.getId());
+	var result1 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getOutputConnectorsByItem', {'key': '"' + item.getId() + '"'}).responseText);
+	console.log(result1);
+	if (result1.rows.length != 0) {
+		outputConnectors = result1.rows;
 		for (var i = 0; i < outputConnectors.length; i++) {
 			var outputConnector = outputConnectors[i].value;
 			tempOutputConnectors.push(outputConnector);
-			var result2 = $.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseJSON;
+			var result2 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseText);
 			outputConnections = result2.rows;
 			for (var j = 0; j < outputConnections.length; j++) {
 				var outputConnection = outputConnections[j].value;
 				tempConnections.push(outputConnection);
-				var result3 = $.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseJSON;
+				var result3 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseText);
 				tempInputConnectors.push(result3);
-				var result4 = $.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseJSON;
+				var result4 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseText);
 				tempItems.push(result4);
 				var newAction = {}
 				newAction[result4._id] = {name: result4.text, icon: ""};
@@ -160,8 +162,8 @@ function contextMenuItem(item, x, y) {
 								}
 							}
 							
-							var outputDraw2DConnector = converter.convertConnector(outputConnector);
-							var inputDraw2DConnector = converter.convertConnector(inputConnector);
+							var outputDraw2DConnector = converter.convertConnector(outputConnector, faceIndex);
+							var inputDraw2DConnector = converter.convertConnector(inputConnector, faceIndex);
 							var draw2DConnection = converter.convertConnection(connection);
 							var draw2DOtherItem = converter.convertItem(otherItem);
 							
