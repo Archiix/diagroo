@@ -456,9 +456,42 @@
 			
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
 			
+			/* TODO: move global var to a speciel file */
+			// item is type of Draw2DItem
+			// to get id with item.getId()
+			addItemVGlobal = function(item) {
+				var flag = false;
+				var itemExists = null;
+				for (var i = 0; i < items.getSize(); i++) {
+					var currentItem = items.get(i);
+					if (currentItem.getId() == item.getId()) {
+						flag = true;
+						itemExists = currentItem;
+					}
+				}
+				items.add(item);
+				canvas.addFigure(item, 10, 10);
+			};
+			
 			var policy = new draw2d.policy.canvas.CanvasPolicy();
+			var tempFigure = null;
 			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
-				// console.log("Mouse click:" + x + "," + y);
+				figure = canvas.getBestFigure(x, y);
+				if (figure != null && (figure instanceof Draw2DItem || figure.getParent())) {
+					if (!figure.getParent()) {
+						figure.mouseEntered();
+						tempFigure = figure;
+					}
+				} else {
+					for (var i = 0; i < items.getSize(); i++) {
+						items.get(i).mouseLeaved();
+					}
+					/*
+					if (tempFigure != null) {
+						tempFigure.mouseLeaved();
+					}
+					*/
+				}
 			}
 			canvas.installEditPolicy(policy);
 			/* end globals variables declaration */
@@ -466,8 +499,8 @@
 			draw2d.Connection.createConnection = function(sourcePort, targetPort) {
 				var newDraw2DConnection = new Draw2DConnection();
 				
-				var inputConnectorId = sourcePort.parent.id;
-				var outputConnectorId = targetPort.parent.id;
+				var inputConnectorId = targetPort.parent.id;
+				var outputConnectorId = sourcePort.parent.id;
 				
 				var newConnection = new Connection(newDraw2DConnection.id, inputConnectorId, outputConnectorId);
 				connections.add(newConnection);
@@ -476,14 +509,24 @@
 				return newDraw2DConnection;
 			};
 			
+			$("#clearButton").click(function() {
+				for (var i = 0; i < items.getSize(); i++) {
+					items.get(i).removeAllConnections();
+					canvas.removeFigure(items.get(i));
+				}
+				items = new draw2d.util.ArrayList();
+				connections = new draw2d.util.ArrayList();
+			});
+			
 			// Add a new Item (x, y) = (10, 10), (w, h) = (100, 100)
 			$("#newItemButton").click(function() {
 				console.log("#newItemButton click event");
 				
 				var newItem = new Draw2DItem(100, 100, "item");
-				canvas.addFigure(newItem, 10, 10);
 				
-				items.add(newItem);
+				// canvas.addFigure(newItem, 10, 10);
+				// items.add(newItem);
+				addItemVGlobal(newItem);
 			});
 			
 			/* Save the model + save all Item, Connector and Connection */
@@ -523,7 +566,10 @@
 					couchDBJQuery.couch.db("diagroo").openDoc(itemId, {
 						success: function(data) {
 							var itemDraw2D = converter.convertItem(data);
-							canvas.addFigure(itemDraw2D, 10, 10);
+							
+							// canvas.addFigure(itemDraw2D, 10, 10);
+							// items.add(itemDraw2D);
+							addItemVGlobal(itemDraw2D);
 						},
 						error: function(status) {
 							console.log(status);
@@ -549,6 +595,7 @@
 			<input type="text" id="modelNameInput" value="model name" />
 			<button id="saveView">Save View</button>
 			<input type="text" id="viewNameInput" value="view name" />
+			<button id="clearButton">Clear</button>
 			<span id="success" style="color: green"></span>
 			<span id="error" style="color: red"></span>
 			<table style="margin-top: 10px;  border-collapse: separate; border-spacing: 5px 8px;">

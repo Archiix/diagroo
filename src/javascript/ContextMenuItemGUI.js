@@ -13,8 +13,7 @@ function contextMenuItem(item, x, y, faceIndex) {
 		"newConnectorS" : {name: "New Connector (South)", icon: ""},
 		"newConnectorE" : {name: "New Connector (East)", icon: ""},
 		"newConnectorW" : {name: "New Connector (West)", icon: ""},
-		"sep1": "---------",
-		"delete": {name: "Delete", icon: ""}
+		"sep1": "---------"
 	};
 	
 	$.ajaxSetup({async:false});
@@ -27,6 +26,7 @@ function contextMenuItem(item, x, y, faceIndex) {
 			var outputConnector = outputConnectors[i].value;
 			tempOutputConnectors.push(outputConnector);
 			var result2 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseText);
+			console.log(result2);
 			outputConnections = result2.rows;
 			for (var j = 0; j < outputConnections.length; j++) {
 				var outputConnection = outputConnections[j].value;
@@ -118,9 +118,6 @@ function contextMenuItem(item, x, y, faceIndex) {
 						case "newConnectorW":
 							item.createConnector(3);
 							break;
-						case "delete":
-							item.getCanvas().removeFigure(item);
-							break;
 						default:
 							console.log('test');
 							console.log(tempOutputConnectors);
@@ -132,6 +129,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 							var connection = tempConnections[0];
 							var inputConnector = tempInputConnectors[0];
 							var otherItem = tempItems[0];
+							
+							// key id other item
 							
 							// search otherItem
 							for (var i = 0; i < tempItems.length; i++) {
@@ -149,18 +148,21 @@ function contextMenuItem(item, x, y, faceIndex) {
 							}
 							// search connection
 							for (var i = 0; i < tempConnections.length; i++) {
-								if (tempConnections[i].inputConnectorId == key) {
+								if (tempConnections[i].outputConnectorId == inputConnector._id) {
 									connection = tempConnections[i];
 									break;
 								}
 							}
 							// search outputConnector
 							for (var i = 0; i < tempOutputConnectors.length; i++) {
-								if (tempOutputConnectors[i] == item._id) {
+								if (tempOutputConnectors[i]._id == connection.inputConnectorId) {
 									outputConnector = tempOutputConnectors[i];
 									break;
 								}
 							}
+							
+							// TODO resolve bug here
+							console.log("output connector id " + outputConnector._id);
 							
 							var outputDraw2DConnector = converter.convertConnector(outputConnector, faceIndex);
 							var inputDraw2DConnector = converter.convertConnector(inputConnector, faceIndex);
@@ -170,7 +172,7 @@ function contextMenuItem(item, x, y, faceIndex) {
 							outputDraw2DConnector.createPort(1); // create output port
 							inputDraw2DConnector.createPort(0); // create input port
 							
-							canvas.addFigure(draw2DOtherItem);
+							// canvas.addFigure(draw2DOtherItem);
 							
 							item.addConnector(outputDraw2DConnector);
 							draw2DOtherItem.addConnector(inputDraw2DConnector);
@@ -180,6 +182,10 @@ function contextMenuItem(item, x, y, faceIndex) {
 							draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
 							canvas.addFigure(draw2DConnection);
 							
+							// add to items list and connections list
+							// items.add(draw2DOtherItem);
+							connections.add(draw2DConnection);
+							addItemVGlobal(draw2DOtherItem);
 							break;
 					}
 				},
