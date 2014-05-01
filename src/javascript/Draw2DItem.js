@@ -14,6 +14,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.label.setColor("#000");
 		this.label.setFontColor("#000");
 		this.label.installEditor(new draw2d.ui.LabelInplaceEditor());
+		// this.label.onMouseEnter = function() {this.mouseEntered()};
+		// this.label.onMouseLeave = function() {};
 		
 		this.addFigure(this.label, new draw2d.layout.locator.CenterLocator(this));
 		
@@ -43,18 +45,26 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.northPort.onContextMenu = function() {
 			contextMenuItem(currentItem, 0, 0, 0);
 		};
+		// this.northPort.onMouseEnter = function() {this.mouseEntered();};
+		// this.northPort.onMouseLeave = function() {};
 		this.southPort = new draw2d.InputPort('southPort');
 		this.southPort.onContextMenu = function() {
 			contextMenuItem(currentItem, 0, 0, 1);
 		};
+		// this.southPort.onMouseEnter = function() {this.mouseEntered();};
+		// this.southPort.onMouseLeave = function() {};
 		this.westPort = new draw2d.InputPort('westPort');
 		this.westPort.onContextMenu = function() {
 			contextMenuItem(currentItem, 0, 0, 2);
 		};
+		// this.westPort.onMouseEnter = function() {this.mouseEntered();};
+		// this.westPort.onMouseLeave = function() {};
 		this.eastPort = new draw2d.InputPort('eastPort');
 		this.eastPort.onContextMenu = function() {
 			contextMenuItem(currentItem, 0, 0, 3);
 		};
+		// this.eastPort.onMouseEnter = function() {this.mouseEntered();};
+		// this.eastPort.onMouseLeave = function() {};
 
 		this.addPort(this.northPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, 10));
 		this.addPort(this.southPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, this.getHeight() - 10));
@@ -105,6 +115,56 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		newItem.repaint();
 	},
 	
+	mouseEntered: function() {
+		this.northPort.setVisible(true);
+		this.southPort.setVisible(true);
+		this.eastPort.setVisible(true);
+		this.westPort.setVisible(true);
+	},
+	
+	mouseLeaved: function() {
+		this.northPort.setVisible(false);
+		this.southPort.setVisible(false);
+		this.eastPort.setVisible(false);
+		this.westPort.setVisible(false);
+	},
+	
+	removeAllConnections: function() {
+		for (var i = 0; i < this.connectors.getSize(); i++) {
+			var c = this.connectors.get(i);
+			var portsList = c.getPorts();
+			for (var j = 0; j < portsList.getSize(); j++) {
+				var p = portsList.get(j);
+				c.removePort(p);
+			}
+		}
+	},
+	
+	removeConnector: function(connectorId) {
+		for (var i = 0; i < this.connectors.getSize(); i++) {
+			var connector = this.connectors.get(i);
+			if (connector.getId() == connectorId) {
+				this.removeFigure(connector);
+				
+				this.connectors.remove(connector);
+				
+				this.connectorsN.remove(connector);
+				this.connectorsS.remove(connector);
+				this.connectorsW.remove(connector);
+				this.connectorsE.remove(connector);
+				break;
+			}
+		}
+	},
+	
+	onMouseEnter: function() {
+		// this.mouseEntered();
+	},
+	
+	onMouseLeave: function() {
+		// this.mouseLeaved();
+	},
+	
 	getText: function() {
 		return this.label.getText();
 	},
@@ -114,7 +174,108 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	},
 	
 	onContextMenu: function(x, y) {
-		// contextMenuItem(this, x, y);
+		var currentItem = this;
+		
+		$.contextMenu({
+			selector: 'body',
+			build: function($trigger, e) {
+				return {
+					callback: function(key, options) {
+						switch(key) {
+							case "delete":
+								console.log("delete");
+								var documentsToDeleted = new draw2d.util.ArrayList();
+								itemId = currentItem.getId();
+								documentsToDeleted.add(itemId);
+								// currentItem.getCanvas().removeFigure(currentItem);
+								console.log("deleting an item");
+								$.ajaxSetup({async:false});
+								var response = $.get('https://diagroo.couchappy.com/diagroo/' + itemId);
+								if (response.statusText == "OK") {
+									var connectors = currentItem.connectors;
+									console.log("connectors size = " + connectors.getSize());
+									for (var i = 0; i < connectors.getSize(); i++) {
+										console.log("i = " + i);
+										var connector = connectors.get(i);
+										console.log("connector = " + connector.getId());
+										connector.removePort(connector.getPorts().get(0));
+										documentsToDeleted.add(connector.getId());
+										if (connector.type == "input") {
+												var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows[0].value;
+												console.log(connection);
+												documentsToDeleted.add(connection._id);
+												// get output connector
+												var outputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText)
+												console.log(outputConnector);
+												
+												var outputConnectorId = outputConnector._id;
+												var otherItemId = outputConnector.itemId;
+												documentsToDeleted.add(outputConnectorId);
+												// delete the connector on the canvas
+												// ...
+												for (var j = 0; j < items.getSize(); j++) {
+													items.get(j).removeConnector(outputConnectorId);
+												}
+										} else {
+												var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows[0].value;
+												console.log(connection);
+												documentsToDeleted.add(connection._id);
+												// get input connector
+												var inputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+												console.log(inputConnector);
+												
+												var inputConnectorId = inputConnector._id;
+												var otherItemId = inputConnector.itemId;
+												documentsToDeleted.add(inputConnectorId);
+												// delete the connector on the canvas
+												// ...
+												for (var j = 0; j < items.getSize(); j++) {
+													items.get(j).removeConnector(inputConnectorId);
+												}
+										}
+									}
+								}
+								currentItem.getCanvas().removeFigure(currentItem);
+								console.log("documentsToDeleted size: " + documentsToDeleted.getSize());
+								for (var i = 0; i < documentsToDeleted.getSize(); i++) {
+									var documentId = documentsToDeleted.get(i);
+									console.log("id document = " + documentId);
+									couchDBJQuery.couch.db("diagroo").openDoc(documentId, {
+										success: function(data) {
+											console.log(data);
+											var docToDelete = {
+												_id: data._id,
+												_rev: data._rev
+											};
+											couchDBJQuery.couch.db("diagroo").removeDoc(docToDelete, {
+												success: function(data) {
+													console.log("success to delete document!");
+													console.log(data);
+												},
+												error: function(status) {
+												}
+											});
+										},
+										error: function(status) {
+										}
+									});
+								}
+								break;
+						}
+					},
+					items: {
+						"delete": {name: "Delete", icon: ""}
+					}
+				}
+			},
+			x: 0,
+			y: 0,
+			events: {
+				hide: function() {
+					$.contextMenu('destroy');
+				}
+			}
+		});
 	},
 	
 	onDoubleClick: function() {

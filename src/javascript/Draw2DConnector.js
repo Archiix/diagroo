@@ -87,11 +87,13 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 			case 0:
 				this.type = "input";
 				port = new draw2d.InputPort();
+				port.setVisible(false);
 				break;
 			// output port
 			case 1:
 				this.type = "output";
 				port = new draw2d.OutputPort();
+				port.setVisible(false);
 				break;
 			default:
 				break;
