@@ -31,7 +31,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 			for (var j = 0; j < outputConnections.length; j++) {
 				var outputConnection = outputConnections[j].value;
 				tempConnections.push(outputConnection);
-				var result3 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseText);
+				// var result3 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseText);
+				var result3 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.inputConnectorId).responseText);
 				tempInputConnectors.push(result3);
 				var result4 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseText);
 				tempItems.push(result4);
@@ -148,14 +149,16 @@ function contextMenuItem(item, x, y, faceIndex) {
 							}
 							// search connection
 							for (var i = 0; i < tempConnections.length; i++) {
-								if (tempConnections[i].outputConnectorId == inputConnector._id) {
+								// if (tempConnections[i].outputConnectorId == inputConnector._id) {
+								if (tempConnections[i].inputConnectorId == inputConnector._id) {
 									connection = tempConnections[i];
 									break;
 								}
 							}
 							// search outputConnector
 							for (var i = 0; i < tempOutputConnectors.length; i++) {
-								if (tempOutputConnectors[i]._id == connection.inputConnectorId) {
+								// if (tempOutputConnectors[i]._id == connection.inputConnectorId) {
+								if (tempOutputConnectors[i]._id == connection.outputConnectorId) {
 									outputConnector = tempOutputConnectors[i];
 									break;
 								}
@@ -163,29 +166,52 @@ function contextMenuItem(item, x, y, faceIndex) {
 							
 							// TODO resolve bug here
 							console.log("output connector id " + outputConnector._id);
+							console.log("input connector id " + inputConnector._id);
 							
 							var outputDraw2DConnector = converter.convertConnector(outputConnector, faceIndex);
 							var inputDraw2DConnector = converter.convertConnector(inputConnector, faceIndex);
 							var draw2DConnection = converter.convertConnection(connection);
 							var draw2DOtherItem = converter.convertItem(otherItem);
 							
-							outputDraw2DConnector.createPort(1); // create output port
-							inputDraw2DConnector.createPort(0); // create input port
+							var itemExisting = itemIsExists(draw2DOtherItem);
 							
-							// canvas.addFigure(draw2DOtherItem);
+							if (!itemExisting) {
 							
-							item.addConnector(outputDraw2DConnector);
-							draw2DOtherItem.addConnector(inputDraw2DConnector);
+								outputDraw2DConnector.createPort(1); // create output port
+								inputDraw2DConnector.createPort(0); // create input port
+								
+								canvas.addFigure(draw2DOtherItem);
+								
+								item.addConnector(outputDraw2DConnector);
+								draw2DOtherItem.addConnector(inputDraw2DConnector);
+								
+								// add a connection between item and draw2DOtherItem
+								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
+								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
+								canvas.addFigure(draw2DConnection);
+								
+								// add to items list and connections list
+								items.add(draw2DOtherItem);
+								connections.add(draw2DConnection);
+								// addItemVGlobal(draw2DOtherItem);
 							
-							// add a connection between item and draw2DOtherItem
-							draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
-							draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
-							canvas.addFigure(draw2DConnection);
+							// already exists
+							} else {
+								error("Block already exists ! [ID = " + itemExisting.getId() + "]");
+								
+								outputDraw2DConnector.createPort(1);
+								inputDraw2DConnector.createPort(0);
+								
+								item.addConnector(outputDraw2DConnector);
+								itemExisting.addConnector(inputDraw2DConnector);
+								
+								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
+								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
+								
+								connections.add(draw2DConnection);
+								canvas.addFigure(draw2DConnection);
+							}
 							
-							// add to items list and connections list
-							// items.add(draw2DOtherItem);
-							connections.add(draw2DConnection);
-							addItemVGlobal(draw2DOtherItem);
 							break;
 					}
 				},

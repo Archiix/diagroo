@@ -94,8 +94,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		items.add(newItem);
 		canvas.addFigure(newItem, x - 50, y - 50);
 		
-		var connectorA = this.createConnector(indexFaceA);
-		var connectorB = newItem.createConnector(indexFaceB);
+		var connectorA = this.createConnector(indexFaceA); // output connector
+		var connectorB = newItem.createConnector(indexFaceB); // input connector
 		
 		this.updateLayout();
 		newItem.updateLayout();
@@ -108,7 +108,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		c.setTarget(portB);
 		canvas.addFigure(c);
 				
-		var newConnection = new Connection(c.id, connectorA.id, connectorB.id);
+		// var newConnection = new Connection(c.id, connectorA.id, connectorB.id); => Warning: inversion
+		var newConnection = new Connection(c.id, connectorB.id, connectorA.id);
 		connections.add(newConnection);
 		
 		this.repaint();
@@ -193,6 +194,38 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 								var response = $.get('https://diagroo.couchappy.com/diagroo/' + itemId);
 								if (response.statusText == "OK") {
 									var connectors = currentItem.connectors;
+									/* *** */
+									// Others connectors into data base ?
+									var itemsNotDisplayed = new draw2d.util.ArrayList(); // des ids
+									var connectorsIntoDB = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getConnectorsByItem', {'key': '"' + itemId + '"'}).responseText).rows;
+									for (var i = 0; i < connectorsIntoDB.length; i++) {
+										var connectorIntoDB = connectorsIntoDB[i].value; // connectorIntoDB._id | connectorIntoDB.type
+										console.log("connector into db id = " + connectorIntoDB._id);
+										console.log("connector into db type = " + connectorIntoDB.portType);
+										var isDisplayed = false;
+										for (var j = 0; j < connectors.getSize(); j++) {
+											if (connectors.get(j).getId() == connectorIntoDB._id) {
+												isDisplayed = true;
+												break;
+											}
+										}
+										if (!isDisplayed) {
+											itemsNotDisplayed.add(connectorIntoDB._id);
+											if (connectorIntoDB.portType == "input") { // input connector
+												var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorIntoDB._id + '"'}).responseText).rows[0].value;
+												var outputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+												itemsNotDisplayed.add(connection._id);
+												itemsNotDisplayed.add(outputConnector._id);
+											} else { // output connector
+												var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorIntoDB._id + '"'}).responseText).rows[0].value;
+												var inputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
+												itemsNotDisplayed.add(connection._id);
+												itemsNotDisplayed.add(inputConnector._id);
+											}
+										}
+									}
+									console.log("items not displayed length = " + itemsNotDisplayed.getSize());
+									/* *** */
 									console.log("connectors size = " + connectors.getSize());
 									for (var i = 0; i < connectors.getSize(); i++) {
 										console.log("i = " + i);
@@ -200,12 +233,13 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 										console.log("connector = " + connector.getId());
 										connector.removePort(connector.getPorts().get(0));
 										documentsToDeleted.add(connector.getId());
-										if (connector.type == "input") {
+										if (connector.portType == "input") {
 												var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows[0].value;
 												console.log(connection);
 												documentsToDeleted.add(connection._id);
 												// get output connector
-												var outputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText)
+												// var outputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText)
+												var outputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
 												console.log(outputConnector);
 												
 												var outputConnectorId = outputConnector._id;
@@ -221,7 +255,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 												console.log(connection);
 												documentsToDeleted.add(connection._id);
 												// get input connector
-												var inputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+												// var inputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+												var inputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
 												console.log(inputConnector);
 												
 												var inputConnectorId = inputConnector._id;
@@ -237,28 +272,32 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 								}
 								currentItem.getCanvas().removeFigure(currentItem);
 								console.log("documentsToDeleted size: " + documentsToDeleted.getSize());
-								for (var i = 0; i < documentsToDeleted.getSize(); i++) {
-									var documentId = documentsToDeleted.get(i);
-									console.log("id document = " + documentId);
-									couchDBJQuery.couch.db("diagroo").openDoc(documentId, {
-										success: function(data) {
-											console.log(data);
-											var docToDelete = {
-												_id: data._id,
-												_rev: data._rev
-											};
-											couchDBJQuery.couch.db("diagroo").removeDoc(docToDelete, {
-												success: function(data) {
-													console.log("success to delete document!");
-													console.log(data);
-												},
-												error: function(status) {
-												}
-											});
-										},
-										error: function(status) {
-										}
-									});
+								var answer = confirm("Delete into data base ?");
+								if (answer) {
+									documentsToDeleted.addAll(itemsNotDisplayed);
+									for (var i = 0; i < documentsToDeleted.getSize(); i++) {
+										var documentId = documentsToDeleted.get(i);
+										console.log("id document = " + documentId);
+										couchDBJQuery.couch.db("diagroo").openDoc(documentId, {
+											success: function(data) {
+												console.log(data);
+												var docToDelete = {
+													_id: data._id,
+													_rev: data._rev
+												};
+												couchDBJQuery.couch.db("diagroo").removeDoc(docToDelete, {
+													success: function(data) {
+														console.log("success to delete document!");
+														console.log(data);
+													},
+													error: function(status) {
+													}
+												});
+											},
+											error: function(status) {
+											}
+										});
+									}
 								}
 								break;
 						}
@@ -346,7 +385,6 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		}
 		
 		this.updateLayout();
-		
 	},
 	
 	updateLayout: function() {

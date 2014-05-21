@@ -459,18 +459,23 @@
 			/* TODO: move global var to a speciel file */
 			// item is type of Draw2DItem
 			// to get id with item.getId()
-			addItemVGlobal = function(item) {
-				var flag = false;
-				var itemExists = null;
+			itemIsExists = function(item) {
 				for (var i = 0; i < items.getSize(); i++) {
 					var currentItem = items.get(i);
 					if (currentItem.getId() == item.getId()) {
-						flag = true;
-						itemExists = currentItem;
+						return currentItem;
 					}
 				}
-				items.add(item);
-				canvas.addFigure(item, 10, 10);
+				return false;
+			};
+			
+			addItemVGlobal = function(item) {
+				if (itemIsExists(item)) {
+					error("Block already exists !");
+				} else {
+					items.add(item);
+					canvas.addFigure(item, 10, 10);
+				}
 			};
 			
 			var policy = new draw2d.policy.canvas.CanvasPolicy();
