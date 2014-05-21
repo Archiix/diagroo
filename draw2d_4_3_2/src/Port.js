@@ -442,6 +442,10 @@ draw2d.Port = draw2d.shape.basic.Circle.extend({
       // draw2d.shape.basic.Rectangle.prototype.onDragEnd.call(this); DON'T call the super implementation!!!
     
       this.setAlpha(1.0);
+	  
+	  // project diagroo
+	  var oldX = this.getAbsoluteX();
+	  var oldY = this.getAbsoluteY();
     
       // 1.) Restore the old Position of the node
       //
@@ -469,6 +473,13 @@ draw2d.Port = draw2d.shape.basic.Circle.extend({
       // Reset the drag&drop flyover information 
       //
       this.currentTarget = null;
+	  
+	  // project diagroo
+	  if(this.getParent()!==null){
+		  console.log("[Port.js] onDragEnd");
+		  console.log("x: " + oldX + ", y: " + oldY);
+	  	  this.parent.onNewEventForDiagroo(this, oldX, oldY);
+      }
     },
     
     /**

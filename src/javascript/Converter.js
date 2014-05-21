@@ -10,9 +10,30 @@ function ConverterJSON() {
 		return draw2DItem;
 	}
 	
-	this.convertConnector = function(obj) {
+	this.convertConnector = function(obj, faceIndex) {
+		var w = 0;
+		var h = 0;
+		switch (faceIndex) {
+			case 0:
+				w = 16;
+				h = 30;
+				break;
+			case 1:
+				w = 16;
+				h = 30;
+				break;
+			case 2:
+				w = 30;
+				h = 16;
+				break;
+			case 3:
+				w = 30;
+				h = 16;
+				break;
+		}
+		
 		var locator = new draw2d.layout.locator.XYAbsPortLocator(0, 0);
-		var draw2DConnector = new Draw2DConnector(30, 16, "c", locator, obj.faceIndex);
+		var draw2DConnector = new Draw2DConnector(w, h, "c", locator, faceIndex);
 		draw2DConnector.setId(obj._id);
 		return draw2DConnector;
 	}

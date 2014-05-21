@@ -53,6 +53,11 @@ draw2d.shape.basic.Rectangle = draw2d.VectorFigure.extend({
         this.setDimension(width, height);
       }
     },
+	
+	// project diagroo
+	onNewEventForDiagroo: function(relatedPort, oldX, oldY){
+		console.log("[Rectangle.js] onNewEventForDiagroo [oldX = " + oldX + ", oldY = " + oldY + "]");
+	},
 
     /**
      * @inheritdoc

@@ -1,5 +1,5 @@
 
-function contextMenuItem(item, x, y) {
+function contextMenuItem(item, x, y, faceIndex) {
 
 	var tempOutputConnectors = new Array();
 	var tempConnections = new Array();
@@ -13,29 +13,33 @@ function contextMenuItem(item, x, y) {
 		"newConnectorS" : {name: "New Connector (South)", icon: ""},
 		"newConnectorE" : {name: "New Connector (East)", icon: ""},
 		"newConnectorW" : {name: "New Connector (West)", icon: ""},
-		"sep1": "---------",
-		"delete": {name: "Delete", icon: ""}
+		"sep1": "---------"
 	};
 	
-	// reqest synchronous
 	$.ajaxSetup({async:false});
-	var result1 = $.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getOutputConnectorsByItem', {'key': '"' + item.getId() + '"'}).responseJSON;
-	outputConnectors = result1.rows;
-	for (var i = 0; i < outputConnectors.length; i++) {
-		var outputConnector = outputConnectors[i].value;
-		tempOutputConnectors.push(outputConnector);
-		var result2 = $.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseJSON;
-		outputConnections = result2.rows;
-		for (var j = 0; j < outputConnections.length; j++) {
-			var outputConnection = outputConnections[j].value;
-			tempConnections.push(outputConnection);
-			var result3 = $.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseJSON;
-			tempInputConnectors.push(result3);
-			var result4 = $.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseJSON;
-			tempItems.push(result4);
-			var newAction = {}
-			newAction[result4._id] = {name: result4.text, icon: ""};
-			$.extend(actions, newAction);
+	console.log(item.getId());
+	var result1 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getOutputConnectorsByItem', {'key': '"' + item.getId() + '"'}).responseText);
+	console.log(result1);
+	if (result1.rows.length != 0) {
+		outputConnectors = result1.rows;
+		for (var i = 0; i < outputConnectors.length; i++) {
+			var outputConnector = outputConnectors[i].value;
+			tempOutputConnectors.push(outputConnector);
+			var result2 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseText);
+			console.log(result2);
+			outputConnections = result2.rows;
+			for (var j = 0; j < outputConnections.length; j++) {
+				var outputConnection = outputConnections[j].value;
+				tempConnections.push(outputConnection);
+				// var result3 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.outputConnectorId).responseText);
+				var result3 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.inputConnectorId).responseText);
+				tempInputConnectors.push(result3);
+				var result4 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseText);
+				tempItems.push(result4);
+				var newAction = {}
+				newAction[result4._id] = {name: result4.text, icon: ""};
+				$.extend(actions, newAction);
+			}
 		}
 	}
 	/*
@@ -115,9 +119,6 @@ function contextMenuItem(item, x, y) {
 						case "newConnectorW":
 							item.createConnector(3);
 							break;
-						case "delete":
-							item.getCanvas().removeFigure(item);
-							break;
 						default:
 							console.log('test');
 							console.log(tempOutputConnectors);
@@ -129,6 +130,8 @@ function contextMenuItem(item, x, y) {
 							var connection = tempConnections[0];
 							var inputConnector = tempInputConnectors[0];
 							var otherItem = tempItems[0];
+							
+							// key id other item
 							
 							// search otherItem
 							for (var i = 0; i < tempItems.length; i++) {
@@ -146,36 +149,68 @@ function contextMenuItem(item, x, y) {
 							}
 							// search connection
 							for (var i = 0; i < tempConnections.length; i++) {
-								if (tempConnections[i].inputConnectorId == key) {
+								// if (tempConnections[i].outputConnectorId == inputConnector._id) {
+								if (tempConnections[i].inputConnectorId == inputConnector._id) {
 									connection = tempConnections[i];
 									break;
 								}
 							}
 							// search outputConnector
 							for (var i = 0; i < tempOutputConnectors.length; i++) {
-								if (tempOutputConnectors[i] == item._id) {
+								// if (tempOutputConnectors[i]._id == connection.inputConnectorId) {
+								if (tempOutputConnectors[i]._id == connection.outputConnectorId) {
 									outputConnector = tempOutputConnectors[i];
 									break;
 								}
 							}
 							
-							var outputDraw2DConnector = converter.convertConnector(outputConnector);
-							var inputDraw2DConnector = converter.convertConnector(inputConnector);
+							// TODO resolve bug here
+							console.log("output connector id " + outputConnector._id);
+							console.log("input connector id " + inputConnector._id);
+							
+							var outputDraw2DConnector = converter.convertConnector(outputConnector, faceIndex);
+							var inputDraw2DConnector = converter.convertConnector(inputConnector, faceIndex);
 							var draw2DConnection = converter.convertConnection(connection);
 							var draw2DOtherItem = converter.convertItem(otherItem);
 							
-							outputDraw2DConnector.createPort(1); // create output port
-							inputDraw2DConnector.createPort(0); // create input port
+							var itemExisting = itemIsExists(draw2DOtherItem);
 							
-							canvas.addFigure(draw2DOtherItem);
+							if (!itemExisting) {
 							
-							item.addConnector(outputDraw2DConnector);
-							draw2DOtherItem.addConnector(inputDraw2DConnector);
+								outputDraw2DConnector.createPort(1); // create output port
+								inputDraw2DConnector.createPort(0); // create input port
+								
+								canvas.addFigure(draw2DOtherItem);
+								
+								item.addConnector(outputDraw2DConnector);
+								draw2DOtherItem.addConnector(inputDraw2DConnector);
+								
+								// add a connection between item and draw2DOtherItem
+								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
+								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
+								canvas.addFigure(draw2DConnection);
+								
+								// add to items list and connections list
+								items.add(draw2DOtherItem);
+								connections.add(draw2DConnection);
+								// addItemVGlobal(draw2DOtherItem);
 							
-							// add a connection between item and draw2DOtherItem
-							draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
-							draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
-							canvas.addFigure(draw2DConnection);
+							// already exists
+							} else {
+								error("Block already exists ! [ID = " + itemExisting.getId() + "]");
+								
+								outputDraw2DConnector.createPort(1);
+								inputDraw2DConnector.createPort(0);
+								
+								item.addConnector(outputDraw2DConnector);
+								itemExisting.addConnector(inputDraw2DConnector);
+								
+								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
+								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
+								
+								connections.add(draw2DConnection);
+								canvas.addFigure(draw2DConnection);
+							}
 							
 							break;
 					}

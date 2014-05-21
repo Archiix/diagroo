@@ -431,6 +431,7 @@
 		
 		<!-- My JavaScript -->
 		<script type="text/javascript" src="src/javascript/Styles.js"></script>
+		<script type="text/javascript" src="src/javascript/CustomPort.js"></script>
 		<script type="text/javascript" src="src/javascript/Draw2DItem.js"></script>
 		<script type="text/javascript" src="src/javascript/Draw2DConnector.js"></script>
 		<script type="text/javascript" src="src/javascript/Draw2DConnection.js"></script>
@@ -443,37 +444,6 @@
 		
 		<script type="text/javascript">
 		$(window).load(function() {
-			$("#testButton").click(function() {
-				/*
-				couchDBJQuery.couch.info({
-					success: function(data) {
-						console.log("info1");
-					},
-					async: false
-				});
-				*/
-				/*
-				couchDBJQuery.couch.db("diagroo").view("model/getModelByName", {
-					success: function(data) {
-						console.log(data);
-					},
-					error: function(status) {
-						console.log(status);
-					},
-					key: 'model1'
-				});
-				*/
-				
-				$.ajaxSetup({async:false});
-				// var result = $.get('https://diagroo.couchappy.com/diagroo/1528375e-1284-af74-ac1d-72e811e56acf');
-				// get a view
-				var result = $.get('https://diagroo.couchappy.com/diagroo/_design/model/_view/getModelByName', {'key': '"model1"'});
-				var res = JSON.stringify(result);
-				var resFinal = JSON.parse(res);
-				console.log(resFinal.responseJSON);
-				console.log("info2");
-			});
-			
 			/* globals variables declaration */
 			success = function(msg) { $("#success").text(msg); };
 			error = function(msg) { $("#error").text(msg); };
@@ -486,9 +456,47 @@
 			
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
 			
+			/* TODO: move global var to a speciel file */
+			// item is type of Draw2DItem
+			// to get id with item.getId()
+			itemIsExists = function(item) {
+				for (var i = 0; i < items.getSize(); i++) {
+					var currentItem = items.get(i);
+					if (currentItem.getId() == item.getId()) {
+						return currentItem;
+					}
+				}
+				return false;
+			};
+			
+			addItemVGlobal = function(item) {
+				if (itemIsExists(item)) {
+					error("Block already exists !");
+				} else {
+					items.add(item);
+					canvas.addFigure(item, 10, 10);
+				}
+			};
+			
 			var policy = new draw2d.policy.canvas.CanvasPolicy();
+			var tempFigure = null;
 			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
-				// console.log("Mouse click:" + x + "," + y);
+				figure = canvas.getBestFigure(x, y);
+				if (figure != null && (figure instanceof Draw2DItem || figure.getParent())) {
+					if (!figure.getParent()) {
+						figure.mouseEntered();
+						tempFigure = figure;
+					}
+				} else {
+					for (var i = 0; i < items.getSize(); i++) {
+						items.get(i).mouseLeaved();
+					}
+					/*
+					if (tempFigure != null) {
+						tempFigure.mouseLeaved();
+					}
+					*/
+				}
 			}
 			canvas.installEditPolicy(policy);
 			/* end globals variables declaration */
@@ -496,8 +504,8 @@
 			draw2d.Connection.createConnection = function(sourcePort, targetPort) {
 				var newDraw2DConnection = new Draw2DConnection();
 				
-				var inputConnectorId = sourcePort.parent.id;
-				var outputConnectorId = targetPort.parent.id;
+				var inputConnectorId = targetPort.parent.id;
+				var outputConnectorId = sourcePort.parent.id;
 				
 				var newConnection = new Connection(newDraw2DConnection.id, inputConnectorId, outputConnectorId);
 				connections.add(newConnection);
@@ -506,14 +514,24 @@
 				return newDraw2DConnection;
 			};
 			
+			$("#clearButton").click(function() {
+				for (var i = 0; i < items.getSize(); i++) {
+					items.get(i).removeAllConnections();
+					canvas.removeFigure(items.get(i));
+				}
+				items = new draw2d.util.ArrayList();
+				connections = new draw2d.util.ArrayList();
+			});
+			
 			// Add a new Item (x, y) = (10, 10), (w, h) = (100, 100)
 			$("#newItemButton").click(function() {
 				console.log("#newItemButton click event");
 				
 				var newItem = new Draw2DItem(100, 100, "item");
-				canvas.addFigure(newItem, 10, 10);
 				
-				items.add(newItem);
+				// canvas.addFigure(newItem, 10, 10);
+				// items.add(newItem);
+				addItemVGlobal(newItem);
 			});
 			
 			/* Save the model + save all Item, Connector and Connection */
@@ -553,7 +571,10 @@
 					couchDBJQuery.couch.db("diagroo").openDoc(itemId, {
 						success: function(data) {
 							var itemDraw2D = converter.convertItem(data);
-							canvas.addFigure(itemDraw2D, 10, 10);
+							
+							// canvas.addFigure(itemDraw2D, 10, 10);
+							// items.add(itemDraw2D);
+							addItemVGlobal(itemDraw2D);
 						},
 						error: function(status) {
 							console.log(status);
@@ -572,30 +593,14 @@
 		
 	</head>
 	<body>
-		<!-- menu bar -->
-		<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-					<span class="sr-only">Toggle navigation</span>
-					<span class="icon-bar"></span>
-				</button>
-				<a class="navbar-brand" href="#">diagroo</a>
-			</div>
-			<div class="collapse navbar-collapse">
-				<ul class="nav navbar-nav">
-					<li class="active"><a href="#">Editor 2D</a></li>
-				</ul>
-			</div><!--/.nav-collapse -->
-		</div>
-		<!-- menu bar end -->
 		<div style="margin: 10px">
-			<h2>diagroo - Relational diagram to view an IT infrastructure</h2>
-			<button id="testButton">test</button>
+			<h2><span class="title">diagroo - Relational diagram to view an IT infrastructure</span></h2>
 			<button id="newItemButton">New Item</button>
 			<button id="saveModel">Save Model</button>
 			<input type="text" id="modelNameInput" value="model name" />
 			<button id="saveView">Save View</button>
 			<input type="text" id="viewNameInput" value="view name" />
+			<button id="clearButton">Clear</button>
 			<span id="success" style="color: green"></span>
 			<span id="error" style="color: red"></span>
 			<table style="margin-top: 10px;  border-collapse: separate; border-spacing: 5px 8px;">
