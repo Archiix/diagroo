@@ -1,5 +1,5 @@
 
-function saveUpdateModel(modelName, items, connections) {
+function saveUpdateModel(modelName, items, connections) { // items ==> Draw2DItem object, connections ==> Connection object
 	
 	couchDBJQuery.couch.db("diagroo").view("model/getModelByName", {
 		success: function(data) {
