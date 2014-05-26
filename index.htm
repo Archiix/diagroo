@@ -441,6 +441,9 @@
 		<script type="text/javascript" src="src/javascript/Connection.js"></script>
 		<script type="text/javascript" src="src/javascript/Queries.js"></script>
 		<script type="text/javascript" src="src/javascript/Converter.js"></script>
+		<script type="text/javascript" src="src/javascript/ItemView.js"></script>
+		<script type="text/javascript" src="src/javascript/ConnectorView.js"></script>
+		<script type="text/javascript" src="src/javascript/ConnectionView.js"></script>
 		
 		<script type="text/javascript">
 		$(window).load(function() {
@@ -545,6 +548,17 @@
 			
 			/* Save the view + save all ItemView */
 			$("#saveView").click(function() {
+				// clear log message
+				clear();
+				var viewName = $("#viewNameInput").val();
+				
+				saveUpdateView(viewName, items, connections) // SaveUpdateViewGUI.js
+			});
+			
+			$("#loadViewButton").click(function() {
+				var viewName = $("#viewNameInput").val();
+				
+				loadView(viewName, items, connections, canvas); // LoadViewGUI.js
 			});
 			
 			/* Get all models + get all items from model name */
@@ -590,6 +604,8 @@
 		<script type="text/javascript" src="src/javascript/SaveUpdateModelGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/GetModelsAndItemsGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/ContextMenuItemGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/SaveUpdateViewGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/LoadViewGUI.js"></script>
 		
 	</head>
 	<body>
@@ -616,6 +632,9 @@
 						<select id="itemsSelect" multiple="multiple">
 							<option value="">No Items</option>
 						</select>
+					</td>
+					<td>
+						<button id="loadViewButton">Load View</button>
 					</td>
 				</tr>
 			</table>
