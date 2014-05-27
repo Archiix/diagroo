@@ -40,6 +40,7 @@ function ConverterJSON() {
 	
 	this.convertConnection = function(obj) {
 		var draw2DConnection = new Draw2DConnection();
+		draw2DConnection.setId(obj._id);
 		return draw2DConnection;
 	}
 }

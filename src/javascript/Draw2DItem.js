@@ -89,6 +89,17 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		}
 	},
 	
+	searchConnectorById: function(connectorId) {
+		for (var i = 0; i < this.connectors.getSize(); i++) {
+			var connector = this.connectors.get(i);
+			console.log("[searchConnectorById] " + connector.getId());
+			if (connector.getId() == connectorId) {
+				return connector;
+			}
+		}
+		return false;
+	},
+	
 	addNewItem: function(x, y, indexFaceA, indexFaceB) {
 		var newItem = new Draw2DItem(100, 100, "Item");
 		items.add(newItem);
