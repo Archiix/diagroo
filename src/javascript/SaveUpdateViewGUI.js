@@ -13,7 +13,7 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 		console.log(itemId);
 		// est ce que l'itemView existe déjà
 		
-		var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/itemViewIsExisting', {'key': '"[' + viewName + ', ' + itemId + ']"'}).responseText);
+		var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/itemViewIsExisting', {'key': '[' + '"' + viewName + '"' + ', ' + '"' + itemId + '"' + ']'}).responseText);
 		if (itemView.rows.length == 0) {
 			// viewName, x, y, itemId
 			var newItemView = new ItemView(viewName, currentItem.getX(), currentItem.getY(), itemId);
@@ -59,9 +59,9 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 				var currentConnector = currentItem.connectors.get(j);
 				var idConnector = currentConnector.getId();
 				// get ConnectorView object
-				var connectorView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorView', {'key': '"[' + viewName + ', ' + idConnector + ']"'}).responseText);
+				var connectorView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorView', {'key': '[' + '"' + viewName + '"' + ', ' + '"' + idConnector + '"' + ']'}).responseText);
 				if (connectorView.rows.length > 0) {
-					var connectorViewToUpdate = connectorView.rows[0];
+					var connectorViewToUpdate = connectorView.rows[0].value;
 					
 					connectorViewToUpdate.x = currentConnector.getX();
 					connectorViewToUpdate.y = currentConnector.getY();
@@ -69,6 +69,7 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 					
 					couchDBJQuery.couch.db("diagroo").saveDoc(connectorViewToUpdate, {
 						success: function(data) {
+							console.log("mise à jour des connecteurs");
 						},
 						error: function(status) {
 						}
@@ -82,15 +83,30 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 	}
 	for (var i = 0; i < connections.getSize(); i++) {
 		var currentConnection = connections.get(i);
-		// viewName, vertices, connectionId
-		var newConnectionView = new ConnectionView(viewName, [], currentConnection.id);
-		
-		couchDBJQuery.couch.db("diagroo").saveDoc(newConnectionView, {
-			success: function(data) {
-			},
-			error: function(status) {
-			}
-		});
+		console.log(currentConnection._id);
+		var connectionView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionView', {'key': '["'+viewName+'","'+currentConnection._id+'"]'}).responseText);
+		if (connectionView.rows.length == 0) {
+			// viewName, vertices, connectionId
+			var newConnectionView = new ConnectionView(viewName, [], currentConnection.id);
+			
+			couchDBJQuery.couch.db("diagroo").saveDoc(newConnectionView, {
+				success: function(data) {
+				},
+				error: function(status) {
+				}
+			});
+		} else {
+			// mise à jour
+			console.log("mise à jours des connections");
+			var connectionViewToUpdate = connectionView.rows[0].value;
+			console.log(connectionViewToUpdate);
+			couchDBJQuery.couch.db("diagroo").saveDoc(connectionViewToUpdate, {
+				success: function(data) {
+				},
+				error: function(status) {
+				}
+			});
+		}
 	}
 	/* *************************************************************************************************************** */
 }

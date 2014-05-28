@@ -70,6 +70,12 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.addPort(this.southPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, this.getHeight() - 10));
 		this.addPort(this.westPort, new draw2d.layout.locator.XYAbsPortLocator(10, this.getHeight() / 2));
 		this.addPort(this.eastPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() - 10, this.getHeight() / 2));
+		
+		this.tooltip = null;
+	},
+	
+	onDoubleClick: function() {
+		console.log("[Draw2DItem.js] Draw2DItem ID = " + this.getId());
 	},
 	
 	onNewEventForDiagroo: function(relatedPort, oldX, oldY) {
@@ -326,9 +332,6 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				}
 			}
 		});
-	},
-	
-	onDoubleClick: function() {
 	},
 	
 	createConnector: function(faceIndex) {

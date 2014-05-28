@@ -67,6 +67,7 @@ function loadView(viewName, items, connections, canvas) {
 		outputConnector.createPort(1); // create output port
 		inputConnector.createPort(0); // create input port
 		var newDraw2DConnection = new Draw2DConnection();
+		newDraw2DConnection.setId(connectionId);
 		newDraw2DConnection.setSource(outputConnector.getOutputPort(0));
 		newDraw2DConnection.setTarget(inputConnector.getInputPort(0));
 		// id, inputConnectorId, outputConnectorId

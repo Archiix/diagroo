@@ -7,6 +7,7 @@
 		<!-- CSS -->
 		<link type="text/css" rel="stylesheet" href="draw2d_4_3_2/css/contextmenu.css" />
 		<link type="text/css" rel="stylesheet" href="src/css/example.css" />
+		<link type="text/css" rel="stylesheet" href="src/css/tooltip.css" />
 		<link type="text/css" rel="stylesheet" href="src/css/bootstrap.min.css" />
 		
 		<!-- JavaScript -->
@@ -510,7 +511,7 @@
 				var inputConnectorId = targetPort.parent.id;
 				var outputConnectorId = sourcePort.parent.id;
 				
-				var newConnection = new Connection(newDraw2DConnection.id, inputConnectorId, outputConnectorId);
+				var newConnection = new Connection(newDraw2DConnection.getId(), inputConnectorId, outputConnectorId);
 				connections.add(newConnection);
 				
 				// return my special kind of connection
@@ -524,6 +525,11 @@
 				}
 				items = new draw2d.util.ArrayList();
 				connections = new draw2d.util.ArrayList();
+				
+				// test 28.05.2014
+				$.ajaxSetup({async:false});
+				var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/itemViewIsExisting', {'key': '[' + '"view1"' + ', ' + '"02c19792-ed16-1998-1cb3-8bf64a363f7c"' + ']'}).responseText);
+				console.log(itemView);
 			});
 			
 			// Add a new Item (x, y) = (10, 10), (w, h) = (100, 100)
