@@ -23,6 +23,12 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		this.locator = locator;
 		this.faceIndex = faceIndex;
 		this.type = ""; // "input" or "output"
+		
+		this.policy = new draw2d.policy.figure.FigureSelectionFeedbackPolicy();
+		/*policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
+			console.log("[x = " + x + "y = " + y + "]");
+		};*/
+		this.installEditPolicy(policy);
 	},
 	
 	/*
@@ -34,6 +40,8 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		this.label.setText(text);
 	},
 	*/
+	
+	
 	
 	getLocator: function() {
 		return this.locator;
@@ -78,6 +86,7 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 	},
 	
 	onDoubleClick: function() {
+		console.log("[Draw2DConnector.js] Draw2DConnector ID = " + this.getId());
 	},
 	
 	createPort: function(portType) {
