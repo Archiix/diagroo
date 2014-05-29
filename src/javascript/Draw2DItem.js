@@ -114,8 +114,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		var connectorA = this.createConnector(indexFaceA); // output connector
 		var connectorB = newItem.createConnector(indexFaceB); // input connector
 		
-		this.updateLayout();
-		newItem.updateLayout();
+		// this.updateLayout();
+		// newItem.updateLayout();
 		
 		var portA = connectorA.createPort(1);
 		var portB = connectorB.createPort(0);
@@ -343,6 +343,9 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				this.addFigure(connector, locator);
 				this.connectors.add(connector);
 				this.connectorsN.add(connector);
+				
+				locator.x = (this.getWidth() - connector.getWidth()) / 2;
+				locator.y = -connector.getHeight();
 				return connector;
 				break;
 			case 1:
@@ -350,6 +353,9 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				this.addFigure(connector, locator);
 				this.connectors.add(connector);
 				this.connectorsS.add(connector);
+				
+				locator.x = (this.getWidth() - connector.getWidth()) / 2;
+				locator.y = this.getHeight();
 				return connector;
 				break;
 			case 2:
@@ -357,6 +363,9 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				this.addFigure(connector, locator);
 				this.connectors.add(connector);
 				this.connectorsE.add(connector);
+				
+				locator.x = -30;
+				locator.y = (this.getHeight() - connector.getHeight()) / 2;
 				return connector;
 				break;
 			case 3:
@@ -364,32 +373,49 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				this.addFigure(connector, locator);
 				this.connectors.add(connector);
 				this.connectorsW.add(connector);
+				
+				locator.x = this.getWidth();
+				locator.y = (this.getHeight() - connector.getHeight()) / 2;
 				return connector;
 				break;
 			default:
 				break;
 		}
+		
+		this.repaint();
 	},
 	
 	addConnector: function(connector) {
 		
 		switch (connector.faceIndex) {
 			case 0:
+				connector.locator.x = (this.getWidth() - connector.getWidth()) / 2;
+				connector.locator.y = -connector.getHeight();
+				
 				this.addFigure(connector, connector.locator);
 				this.connectors.add(connector);
 				this.connectorsN.add(connector);
 				break;
 			case 1:
+				connector.locator.x = (this.getWidth() - connector.getWidth()) / 2;
+				connector.locator.y = this.getHeight();
+				
 				this.addFigure(connector, connector.locator);
 				this.connectors.add(connector);
 				this.connectorsS.add(connector);
 				break;
 			case 2:
+				connector.locator.x = -30;
+				connector.locator.y = (this.getHeight() - connector.getHeight()) / 2;
+				
 				this.addFigure(connector, connector.locator);
 				this.connectors.add(connector);
 				this.connectorsE.add(connector);
 				break;
 			case 3:
+				connector.locator.x = this.getWidth();
+				connector.locator.y = (this.getHeight() - connector.getHeight()) / 2;
+				
 				this.addFigure(connector, connector.locator);
 				this.connectors.add(connector);
 				this.connectorsW.add(connector);
@@ -398,7 +424,9 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				break;
 		}
 		
-		this.updateLayout();
+		this.repaint();
+		
+		// this.updateLayout();
 	},
 	
 	updateLayout: function() {
