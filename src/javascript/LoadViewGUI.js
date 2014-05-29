@@ -42,7 +42,11 @@ function loadView(viewName, items, connections, canvas) {
 		var newDraw2DConnector = parentItem.createConnector(faceIndex);
 		newDraw2DConnector.setId(connectorId);
 		
-		parentItem.updateLayout();
+		newDraw2DConnector.getLocator().x = x;
+		newDraw2DConnector.getLocator().y = y;
+		
+		parentItem.repaint();
+		// parentItem.updateLayout();
 	}
 	
 	/* for the connections */

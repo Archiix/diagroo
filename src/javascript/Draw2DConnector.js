@@ -21,14 +21,22 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		*/
 		
 		this.locator = locator;
+		this.port = null;
+		this.portLocator = null;
 		this.faceIndex = faceIndex;
 		this.type = ""; // "input" or "output"
 		
-		this.policy = new draw2d.policy.figure.FigureSelectionFeedbackPolicy();
-		/*policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
+		/*
+		this.policy = new draw2d.policy.canvas.SelectionPolicy();
+		policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
 			console.log("[x = " + x + "y = " + y + "]");
-		};*/
+		};
 		this.installEditPolicy(policy);
+		*/
+	},
+	
+	onMouseMove: function(x, y) {
+		console.log("test");
 	},
 	
 	/*
@@ -87,22 +95,58 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 	
 	onDoubleClick: function() {
 		console.log("[Draw2DConnector.js] Draw2DConnector ID = " + this.getId());
+		// w, h = 30, 16 or w, h = 16, 30
+		// change de face le connecteur
+		switch (this.faceIndex) {
+			case 0:
+				this.faceIndex = 3;
+				this.port.getLocator().x = 30;
+				this.port.getLocator().y = 8;
+				this.setDimension(30, 16);
+				this.locator.x = this.getParent().getWidth();
+				this.locator.y = 0;
+				break;
+			case 1:
+				this.faceIndex = 2;
+				this.port.getLocator().x = 0;
+				this.port.getLocator().y = 8;
+				this.setDimension(30, 16);
+				this.locator.x = -30;
+				this.locator.y = 0;
+				break;
+			case 2:
+				this.faceIndex = 0;
+				this.port.getLocator().x = 8;
+				this.port.getLocator().y = 0;
+				this.setDimension(16, 30);
+				this.locator.x = 0;
+				this.locator.y = -30;
+				break;
+			case 3:
+				this.faceIndex = 1;
+				this.port.getLocator().x = 8;
+				this.port.getLocator().y = 30;
+				this.setDimension(16, 30);
+				this.locator.x = this.getParent().getWidth() - 16;
+				this.locator.y = this.getParent().getHeight();
+				break;
+		}
+		this.getParent().repaint();
 	},
 	
 	createPort: function(portType) {
-		var port;
 		switch (portType) {
 			// input port
 			case 0:
 				this.type = "input";
-				port = new draw2d.InputPort();
-				port.setVisible(false);
+				this.port = new draw2d.InputPort();
+				// port.setVisible(false);
 				break;
 			// output port
 			case 1:
 				this.type = "output";
-				port = new draw2d.OutputPort();
-				port.setVisible(false);
+				this.port = new draw2d.OutputPort();
+				// port.setVisible(false);
 				break;
 			default:
 				break;
@@ -112,23 +156,37 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		switch (this.faceIndex) {
 			// North
 			case 0:
-				this.addPort(port, new draw2d.layout.locator.TopLocator(this));
+				// this.portLocator = new draw2d.layout.locator.TopLocator(this);
+				var portLocator = new draw2d.layout.locator.XYAbsPortLocator(8, 0);
+				// this.addPort(this.port, portLocator);
+				this.addPort(this.port);
+				this.port.setLocator(portLocator);
 				break;
 			// South
 			case 1:
-				this.addPort(port, new draw2d.layout.locator.BottomLocator(this));
+				// this.portLocator = new draw2d.layout.locator.BottomLocator(this)
+				var portLocator = new draw2d.layout.locator.XYAbsPortLocator(8, 30);
+				// this.addPort(this.port, portLocator);
+				this.addPort(this.port);
+				this.port.setLocator(portLocator);
 				break;
 			// East
 			case 2:
-				this.addPort(port, new draw2d.layout.locator.XYAbsPortLocator(0, 8));
+				var portLocator = new draw2d.layout.locator.XYAbsPortLocator(0, 8);
+				// this.addPort(this.port, portLocator);
+				this.addPort(this.port);
+				this.port.setLocator(portLocator);
 				break;
 			// West
 			case 3:
-				this.addPort(port, new draw2d.layout.locator.XYAbsPortLocator(30, 8));
+				var portLocator = new draw2d.layout.locator.XYAbsPortLocator(30, 8);
+				// this.addPort(this.port, portLocator);
+				this.addPort(this.port);
+				this.port.setLocator(portLocator);
 				break;
 			default:
 				break;
 		}
-		return port;
+		return this.port;
 	}
 });

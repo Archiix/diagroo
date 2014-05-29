@@ -486,6 +486,7 @@
 			var tempFigure = null;
 			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
 				figure = canvas.getBestFigure(x, y);
+				// faire mieux !!!
 				if (figure != null && (figure instanceof Draw2DItem || figure.getParent())) {
 					if (!figure.getParent()) {
 						figure.mouseEntered();
@@ -500,6 +501,41 @@
 						tempFigure.mouseLeaved();
 					}
 					*/
+				}
+				// déplacer un connecteur
+				if (figure != null && figure instanceof Draw2DConnector && ctrlKey) {
+					var parent = figure.getParent();
+					var xParent = parent.getX();        var yParent = parent.getY();
+					var wParent = parent.getWidth();    var hParent = parent.getHeight();
+					var xConnector = figure.getX();     var yConnector = figure.getY();
+					var wConnector = figure.getWidth(); var hConnector = figure.getHeight();
+					switch (figure.faceIndex) {
+						case 0:
+							var newXPos = x - xParent;
+							if (newXPos >= wConnector / 2 && newXPos <= (wParent - (wConnector / 2))) {
+								figure.getLocator().x = newXPos - (wConnector / 2);
+							}
+							break;
+						case 1:
+							var newXPos = x - xParent;
+							if (newXPos >= wConnector / 2 && newXPos <= (wParent - (wConnector / 2))) {
+								figure.getLocator().x = newXPos - (wConnector / 2);
+							}
+							break;
+						case 2:
+							var newYPos = y - yParent;
+							if (newYPos >= hConnector / 2 && newYPos <= (hParent - (hConnector / 2))) {
+								figure.getLocator().y = newYPos - (hConnector / 2);
+							}
+							break;
+						case 3:
+							var newYPos = y - yParent;
+							if (newYPos >= hConnector / 2 && newYPos <= (hParent - (hConnector / 2))) {
+								figure.getLocator().y = newYPos - (hConnector / 2);
+							}
+							break;
+					}
+					figure.getParent().repaint();
 				}
 			}
 			canvas.installEditPolicy(policy);
