@@ -77,6 +77,13 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 					
 				} else {
 					console.log("get connector view error !");
+					var newConnectorView = new ConnectorView(viewName, currentConnector.getX(), currentConnector.getY(), currentConnector.faceIndex, currentConnector.getId());
+					couchDBJQuery.couch.db("diagroo").saveDoc(newConnectorView, {
+						success: function(data) {
+						},
+						error: function(status) {
+						}
+					});
 				}
 			}
 		}

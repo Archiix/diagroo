@@ -123,6 +123,7 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		var c = new Draw2DConnection();
 		c.setSource(portA);
 		c.setTarget(portB);
+		c.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 		canvas.addFigure(c);
 				
 		// var newConnection = new Connection(c.id, connectorA.id, connectorB.id); => Warning: inversion
