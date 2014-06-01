@@ -13,5 +13,9 @@ var Draw2DConnection = draw2d.Connection.extend({
       this.setColor('#00A8F0');
       this.setRadius(20);
 	  */
-    }
+    },
+	
+	onDoubleClick: function() {
+		console.log("[Draw2DConnection.js] Draw2DConnection ID = " + this.getId());
+	}
 });
