@@ -1,19 +1,26 @@
 
 function saveUpdateModel(modelName, items, connections) {
+	$.ajaxSetup({async:false});
+	
 	var models = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/model/_view/getModelByName', {'key': '"' + modelName + '"'}).responseText);
 	// sauver le modèle s'il n'existe pas
 	var modelId = couchDBJQuery.couch.newUUID();
 	if (models.rows.length == 0) {
+		console.log("model existe pas");
 		var newModel = new Model(modelId, modelName);
+		save(newModel);
 	} else {
-		modelId = models.rows[0]._id;
+		console.log("model existe");
+		modelId = models.rows[0].value._id;
+		console.log("model id = " + modelId);
 	}
 	// pour tous les blocs
 	for (var i = 0; i < items.getSize(); i++) {
 		var currentItem = items.get(i);
+		console.log("[Item ID] " + currentItem.getId());
 		var item = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentItem.getId()).responseText);
 		if (item.error && item.error == "not_found") {
-			var newItem = Item(currentItem.id, modelId, currentItem.getText());
+			var newItem = new Item(currentItem.getId(), modelId, currentItem.getText());
 			save(newItem);
 			for (var j = 0; j < currentItem.connectors.getSize(); j++) {
 				var currentConnector = currentItem.connectors.get(j);
@@ -26,6 +33,7 @@ function saveUpdateModel(modelName, items, connections) {
 			save(item); // mise à jour
 			for (var j = 0; j < currentItem.connectors.getSize(); j++) {
 				var currentConnector = currentItem.connectors.get(j);
+				console.log("[Connector ID] " + currentConnector.getId());
 				var connector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentConnector.getId()).responseText);
 				if (connector.error && connector.error == "not_found") {
 					var newConnector = new Connector(currentConnector.getId(), currentItem.getId(), currentConnector.type);
@@ -39,7 +47,8 @@ function saveUpdateModel(modelName, items, connections) {
 	// pour toutes les connections
 	for (var i = 0; i < connections.getSize(); i++) {
 		var currentConnection = connections.get(i);
-		var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentConnection.getId()).responseText);
+		console.log("[Connection ID] " + currentConnection._id);
+		var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentConnection._id).responseText);
 		if (connection.error && connection.error == "not_found") {
 			save(currentConnection);
 		} else {
