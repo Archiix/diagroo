@@ -94,7 +94,7 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 		var connectionView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionView', {'key': '["'+viewName+'","'+currentConnection._id+'"]'}).responseText);
 		if (connectionView.rows.length == 0) {
 			// viewName, vertices, connectionId
-			var newConnectionView = new ConnectionView(viewName, [], currentConnection.id);
+			var newConnectionView = new ConnectionView(viewName, [], currentConnection._id);
 			
 			couchDBJQuery.couch.db("diagroo").saveDoc(newConnectionView, {
 				success: function(data) {

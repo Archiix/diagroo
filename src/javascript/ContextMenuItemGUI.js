@@ -219,7 +219,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 								
 								// add to items list and connections list
 								items.add(draw2DOtherItem);
-								connections.add(draw2DConnection);
+								// connections.add(draw2DConnection);
+								connections.add(new Connection(draw2DConnection.getId(), inputDraw2DConnector.getId(), outputDraw2DConnector.getId()));
 								// addItemVGlobal(draw2DOtherItem);
 							
 							// already exists
@@ -242,7 +243,9 @@ function contextMenuItem(item, x, y, faceIndex) {
 									itemExisting.addConnector(outputDraw2DConnector);
 								}
 								draw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
-								connections.add(draw2DConnection);
+								
+								// connections.add(draw2DConnection);
+								connections.add(new Connection(draw2DConnection.getId(), inputDraw2DConnector.getId(), outputDraw2DConnector.getId()));
 								canvas.addFigure(draw2DConnection);
 							}
 							
