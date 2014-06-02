@@ -1,5 +1,5 @@
 
-function saveUpdateModel(modelName, items, connections) {
+function saveUpdateModel(modelName, items, connections, draw2DConnections) {
 	$.ajaxSetup({async:false});
 	
 	var models = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/model/_view/getModelByName', {'key': '"' + modelName + '"'}).responseText);
@@ -50,9 +50,24 @@ function saveUpdateModel(modelName, items, connections) {
 		console.log("[Connection ID] " + currentConnection._id);
 		var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentConnection._id).responseText);
 		if (connection.error && connection.error == "not_found") {
+			for (var j = 0; j < draw2DConnections.getSize(); j++) {
+				var currentDraw2DConnection = draw2DConnections.get(j);
+				if (currentDraw2DConnection.getId() == currentConnection._id) {
+					console.log("[SaveUpdateModelGUI] Text updated !");
+					currentConnection.text = currentDraw2DConnection.getText();
+				}
+			}
 			save(currentConnection);
 		} else {
 			// TODO => mise à jour du texte !!!
+			// draw2DConnections list
+			for (var j = 0; j < draw2DConnections.getSize(); j++) {
+				var currentDraw2DConnection = draw2DConnections.get(j);
+				if (currentDraw2DConnection.getId() == connection._id) {
+					console.log("[SaveUpdateModelGUI] Text updated !");
+					connection.text = currentDraw2DConnection.getText();
+				}
+			}
 			save(connection);
 		}
 	}

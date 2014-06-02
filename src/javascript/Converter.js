@@ -7,6 +7,7 @@ function ConverterJSON() {
 	this.convertItem = function(obj) {
 		draw2DItem = new Draw2DItem(100, 100, obj.text);
 		draw2DItem.setId(obj._id);
+		draw2DItem.setText(obj.text);
 		return draw2DItem;
 	}
 	
@@ -41,6 +42,7 @@ function ConverterJSON() {
 	this.convertConnection = function(obj) {
 		var draw2DConnection = new Draw2DConnection();
 		draw2DConnection.setId(obj._id);
+		draw2DConnection.setText(obj.text);
 		return draw2DConnection;
 	}
 }

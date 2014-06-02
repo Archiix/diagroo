@@ -107,31 +107,42 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	},
 	
 	addNewItem: function(x, y, indexFaceA, indexFaceB) {
-		var newItem = new Draw2DItem(100, 100, "Item");
-		items.add(newItem);
-		canvas.addFigure(newItem, x - 50, y - 50);
-		
 		var connectorA = this.createConnector(indexFaceA); // output connector
-		var connectorB = newItem.createConnector(indexFaceB); // input connector
+		var portA = connectorA.createPort(1); // output port
+		var connectorB = null; // input connector
+		var portB = null; // input port
 		
-		// this.updateLayout();
-		// newItem.updateLayout();
+		var bestFigure = canvas.getBestFigure(x, y);
+		if (bestFigure != null) {
+			if (bestFigure instanceof draw2d.shape.basic.Label) {
+				bestFigure = bestFigure.getParent();
+			}
+			connectorB = bestFigure.createConnector(indexFaceB);
+			portB = connectorB.createPort(0);
+			
+			this.repaint();
+			bestFigure.repaint();
+		} else {
+			var newItem = new Draw2DItem(100, 100, "Item");
+			items.add(newItem);
+			canvas.addFigure(newItem, x - 50, y - 50);
 		
-		var portA = connectorA.createPort(1);
-		var portB = connectorB.createPort(0);
+			connectorB = newItem.createConnector(indexFaceB); // input connector
+			portB = connectorB.createPort(0); // input port
+			
+			this.repaint();
+			newItem.repaint();
+		}
 		
 		var c = new Draw2DConnection();
 		c.setSource(portA);
 		c.setTarget(portB);
 		c.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 		canvas.addFigure(c);
-				
-		// var newConnection = new Connection(c.id, connectorA.id, connectorB.id); => Warning: inversion
-		var newConnection = new Connection(c.id, connectorB.id, connectorA.id);
-		connections.add(newConnection);
 		
-		this.repaint();
-		newItem.repaint();
+		var newConnection = new Connection(c.id, connectorB.id, connectorA.id, c.getText());
+		connections.add(newConnection);
+		draw2DConnections.add(c);
 	},
 	
 	mouseEntered: function() {
