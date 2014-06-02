@@ -197,14 +197,25 @@ function contextMenuItem(item, x, y, faceIndex) {
 								
 								canvas.addFigure(draw2DOtherItem);
 								
-								item.addConnector(outputDraw2DConnector);
-								draw2DOtherItem.addConnector(inputDraw2DConnector);
+								// item.addConnector(outputDraw2DConnector);
+								// draw2DOtherItem.addConnector(inputDraw2DConnector);
 								
 								// add a connection between item and draw2DOtherItem
 								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
 								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
-								draw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
+								if (type == "output") {
+									item.addConnector(outputDraw2DConnector);
+									draw2DOtherItem.addConnector(inputDraw2DConnector);
+									
+									// draw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
+								} else {
+									item.addConnector(inputDraw2DConnector);
+									draw2DOtherItem.addConnector(outputDraw2DConnector);
+									
+									// draw2DConnection.setSourceDecorator(new draw2d.decoration.connection.ArrowDecorator());
+								}
 								canvas.addFigure(draw2DConnection);
+								draw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 								
 								// add to items list and connections list
 								items.add(draw2DOtherItem);
@@ -219,11 +230,18 @@ function contextMenuItem(item, x, y, faceIndex) {
 								outputDraw2DConnector.createPort(1);
 								inputDraw2DConnector.createPort(0);
 								
-								item.addConnector(outputDraw2DConnector);
-								itemExisting.addConnector(inputDraw2DConnector);
+								// item.addConnector(outputDraw2DConnector);
+								// itemExisting.addConnector(inputDraw2DConnector);
 								
 								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
 								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
+								if (type == "output") {
+									item.addConnector(outputDraw2DConnector);
+									itemExisting.addConnector(inputDraw2DConnector);
+								} else {
+									item.addConnector(inputDraw2DConnector);
+									itemExisting.addConnector(outputDraw2DConnector);
+								}
 								draw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 								
 								// connections.add(draw2DConnection);
