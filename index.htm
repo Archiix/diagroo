@@ -455,8 +455,11 @@
 			
 			/* var */ converter = new ConverterJSON();
 			
-			/* var */ items = new draw2d.util.ArrayList();
-			/* var */ connections = new draw2d.util.ArrayList();
+			/* var */ items = new draw2d.util.ArrayList(); // Draw2DItem object
+			/* var */ connections = new draw2d.util.ArrayList(); // Connection object
+			// TODO liste de Draw2DConnection
+			// ...
+			/* var */ draw2DConnections = new draw2d.util.ArrayList();
 			
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
 			
@@ -547,8 +550,9 @@
 				var inputConnectorId = targetPort.parent.id;
 				var outputConnectorId = sourcePort.parent.id;
 				
-				var newConnection = new Connection(newDraw2DConnection.getId(), inputConnectorId, outputConnectorId);
+				var newConnection = new Connection(newDraw2DConnection.getId(), inputConnectorId, outputConnectorId, newDraw2DConnection.getText());
 				connections.add(newConnection);
+				draw2DConnections.add(newDraw2DConnection);
 				
 				// return my special kind of connection
 				return newDraw2DConnection;
@@ -561,6 +565,7 @@
 				}
 				items = new draw2d.util.ArrayList();
 				connections = new draw2d.util.ArrayList();
+				draw2DConnections = new draw2d.util.ArrayList();
 				
 				// test 28.05.2014
 				$.ajaxSetup({async:false});
@@ -585,7 +590,7 @@
 				clear();
 				var modelName = $("#modelNameInput").val();
 				
-				saveUpdateModel(modelName, items, connections); // SaveUpdateModelGUI.js
+				saveUpdateModel(modelName, items, connections, draw2DConnections); // SaveUpdateModelGUI.js
 			});
 			
 			/* Save the view + save all ItemView */

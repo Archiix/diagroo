@@ -220,7 +220,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 								// add to items list and connections list
 								items.add(draw2DOtherItem);
 								// connections.add(draw2DConnection);
-								connections.add(new Connection(draw2DConnection.getId(), inputDraw2DConnector.getId(), outputDraw2DConnector.getId()));
+								connections.add(new Connection(draw2DConnection.getId(), inputDraw2DConnector.getId(), outputDraw2DConnector.getId(), draw2DConnection.getText()));
+								draw2DConnections.add(draw2DConnection);
 								// addItemVGlobal(draw2DOtherItem);
 							
 							// already exists
@@ -245,7 +246,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 								draw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 								
 								// connections.add(draw2DConnection);
-								connections.add(new Connection(draw2DConnection.getId(), inputDraw2DConnector.getId(), outputDraw2DConnector.getId()));
+								connections.add(new Connection(draw2DConnection.getId(), inputDraw2DConnector.getId(), outputDraw2DConnector.getId(), draw2DConnection.getText()));
+								draw2DConnections.add(draw2DConnection);
 								canvas.addFigure(draw2DConnection);
 							}
 							
