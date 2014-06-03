@@ -39,12 +39,14 @@ function saveUpdateModel(modelName, items, connections, draw2DConnections) {
 					var newConnector = new Connector(currentConnector.getId(), currentItem.getId(), currentConnector.type);
 					save(newConnector);
 				} else {
+					// mise à jour du texte (label du connecteur)
 					save(connector);
 				}
 			}
 		}
 	}
 	// pour toutes les connections
+	console.log(connections.getSize());
 	for (var i = 0; i < connections.getSize(); i++) {
 		var currentConnection = connections.get(i);
 		console.log("[Connection ID] " + currentConnection._id);
@@ -61,6 +63,7 @@ function saveUpdateModel(modelName, items, connections, draw2DConnections) {
 		} else {
 			// TODO => mise à jour du texte !!!
 			// draw2DConnections list
+			console.log(draw2DConnections.getSize());
 			for (var j = 0; j < draw2DConnections.getSize(); j++) {
 				var currentDraw2DConnection = draw2DConnections.get(j);
 				if (currentDraw2DConnection.getId() == connection._id) {
