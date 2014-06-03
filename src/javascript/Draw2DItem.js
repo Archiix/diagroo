@@ -217,6 +217,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 								var documentsToDeleted = new draw2d.util.ArrayList();
 								itemId = currentItem.getId();
 								documentsToDeleted.add(itemId);
+								items.remove(currentItem);
+								console.log("Items list size = " + items.getSize());
 								// currentItem.getCanvas().removeFigure(currentItem);
 								console.log("deleting an item");
 								$.ajaxSetup({async:false});
@@ -260,9 +262,11 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 										console.log("i = " + i);
 										var connector = connectors.get(i);
 										console.log("connector = " + connector.getId());
+										console.log("connector type = " + connector.type);
 										connector.removePort(connector.getPorts().get(0));
+										updateConnectionsList(connector);
 										documentsToDeleted.add(connector.getId());
-										if (connector.portType == "input") {
+										if (connector.type == "input") {
 												var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows[0].value;
 												console.log(connection);
 												documentsToDeleted.add(connection._id);
@@ -307,6 +311,47 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 									for (var i = 0; i < documentsToDeleted.getSize(); i++) {
 										var documentId = documentsToDeleted.get(i);
 										console.log("id document = " + documentId);
+										var documentModel = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + documentId).responseText);
+										var documentRev = documentModel._rev;
+										var docToDelete = {
+											_id: documentId,
+											_rev: documentRev
+										};
+										couchDBJQuery.couch.db("diagroo").removeDoc(docToDelete, {
+											success: function(data) {
+											},
+											error: function(status) {
+											}
+										});
+										// supprimer la/les vues correspondantes
+										var viewsToDelete = null;
+										console.log(documentModel.type);
+										switch (documentModel.type) {
+											case "item":
+												viewsToDelete = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/allItemsView', {'key': '"' + documentId + '"'}).responseText);
+												break;
+											case "connector":
+												viewsToDelete = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/allConnectorsView', {'key': '"' + documentId + '"'}).responseText);
+												break;
+											case "connection":
+												viewsToDelete = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/allConnectionsView', {'key': '"' + documentId + '"'}).responseText);
+												break;
+										}
+										console.log(viewsToDelete);
+										for (var j = 0; j < viewsToDelete.rows.length; j++) {
+											var currentViewToDelete = viewsToDelete.rows[j].value;
+											var viewToDelete = {
+												_id: currentViewToDelete._id,
+												_rev: currentViewToDelete._rev
+											};
+											couchDBJQuery.couch.db("diagroo").removeDoc(viewToDelete, {
+												success: function(data) {
+												},
+												error: function(status) {
+												}
+											});
+										}
+										/*
 										couchDBJQuery.couch.db("diagroo").openDoc(documentId, {
 											success: function(data) {
 												console.log(data);
@@ -326,6 +371,7 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 											error: function(status) {
 											}
 										});
+										*/
 									}
 								}
 								break;

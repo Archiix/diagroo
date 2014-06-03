@@ -1,5 +1,5 @@
 
-function loadView(viewName, items, connections, canvas) {
+function loadView(viewName, items, connections, draw2DConnections, canvas) {
 	$.ajaxSetup({async:false});
 	
 	/* for the items */
@@ -78,6 +78,7 @@ function loadView(viewName, items, connections, canvas) {
 		newDraw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 		// id, inputConnectorId, outputConnectorId
 		connections.add(new Connection(connectionId, inputConnectorId, outputConnectorId));
+		draw2DConnections.add(newDraw2DConnection);
 		canvas.addFigure(newDraw2DConnection);
 		
 		outputConnector.repaint();

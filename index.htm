@@ -485,6 +485,32 @@
 				}
 			};
 			
+			updateConnectionsList = function(connector) {
+				console.assert(connections.getSize() === draw2DConnections.getSize());
+				switch (connector.type) {
+					case "output":
+						for (var i = 0; i < connections.getSize(); i++) {
+							if (connections.get(i).outputConnectorId == connector.getId()) {
+								connections.removeElementAt(i);
+								draw2DConnections.removeElementAt(i);
+								break;
+							}
+						}
+						break;
+					case "input":
+						for (var i = 0; i < connections.getSize(); i++) {
+							if (connections.get(i).inputConnectorId == connector.getId()) {
+								connections.removeElementAt(i);
+								draw2DConnections.removeElementAt(i);
+								break;
+							}
+						}
+						break;
+				}
+				console.log("connections size = " + connections.getSize());
+				console.log("draw2DConnection size = " + draw2DConnections.getSize());
+			};
+			
 			var policy = new draw2d.policy.canvas.CanvasPolicy();
 			var tempFigure = null;
 			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
@@ -568,9 +594,46 @@
 				draw2DConnections = new draw2d.util.ArrayList();
 				
 				// test 28.05.2014
+				/*
 				$.ajaxSetup({async:false});
 				var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/itemViewIsExisting', {'key': '[' + '"view1"' + ', ' + '"02c19792-ed16-1998-1cb3-8bf64a363f7c"' + ']'}).responseText);
 				console.log(itemView);
+				*/
+			});
+			
+			/* Delete all documents to database */
+			$("#resetButton").click(function() {
+				couchDBJQuery.couch.db("diagroo").allDocs({
+					success: function(data) {
+						for (var i = 0; i < data.rows.length; i++) {
+							var currentDoc = data.rows[i];
+							var idDoc = currentDoc.id;
+							var revDoc = currentDoc.value.rev;
+							switch (idDoc) {
+								case "_design/connection":
+									break;
+								case "_design/connector":
+									break;
+								case "_design/model":
+									break;
+								case "_design/view":
+									break;
+								default:
+									var docToDelete = {
+										_id: idDoc,
+										_rev: revDoc
+									};
+									couchDBJQuery.couch.db("diagroo").removeDoc(docToDelete, {
+										success: function(data) {
+										},
+										error: function(status) {
+										}
+									});
+									break;
+							}
+						}
+					}
+				});
 			});
 			
 			// Add a new Item (x, y) = (10, 10), (w, h) = (100, 100)
@@ -605,7 +668,7 @@
 			$("#loadViewButton").click(function() {
 				var viewName = $("#viewNameInput").val();
 				
-				loadView(viewName, items, connections, canvas); // LoadViewGUI.js
+				loadView(viewName, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
 			});
 			
 			/* Get all models + get all items from model name */
@@ -664,6 +727,7 @@
 			<button id="saveView">Save View</button>
 			<input type="text" id="viewNameInput" value="view name" />
 			<button id="clearButton">Clear</button>
+			<button id="resetButton">Reset</button>
 			<span id="success" style="color: green"></span>
 			<span id="error" style="color: red"></span>
 			<table style="margin-top: 10px;  border-collapse: separate; border-spacing: 5px 8px;">

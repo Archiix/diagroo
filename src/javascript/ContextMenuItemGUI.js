@@ -20,9 +20,8 @@ function selectConnectors(itemId, listOfConnectors, listOfOtherConnectors, listO
 			listOfOtherItem.push(otherItem);
 			
 			var prefix = type == "Output" ? ";output" : ";input";
-			
 			var newAction = {}
-			newAction[otherItem._id + prefix] = {name: otherItem.text, icon: ""};
+			newAction[otherItem._id + prefix + ";" + otherConnector._id] = {name: otherItem.text + " " + otherConnector._id.substring(0, 8), icon: ""};
 			listOfActions.push(newAction);
 		}
 	}
@@ -45,33 +44,6 @@ function contextMenuItem(item, x, y, faceIndex) {
 	
 	var outputConnectorsAction = new Array();
 	var inputConnectorsAction = new Array();
-	
-	/*
-	var result1 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getOutputConnectorsByItem', {'key': '"' + item.getId() + '"'}).responseText);
-	console.log(result1);
-	if (result1.rows.length != 0) {
-		outputConnectors = result1.rows;
-		for (var i = 0; i < outputConnectors.length; i++) {
-			var outputConnector = outputConnectors[i].value;
-			tempOutputConnectors.push(outputConnector);
-			var result2 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + outputConnector._id + '"'}).responseText);
-			console.log(result2);
-			outputConnections = result2.rows;
-			for (var j = 0; j < outputConnections.length; j++) {
-				var outputConnection = outputConnections[j].value;
-				tempConnections.push(outputConnection);
-				var result3 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + outputConnection.inputConnectorId).responseText);
-				tempInputConnectors.push(result3);
-				var result4 = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + result3.itemId).responseText);
-				tempItems.push(result4);
-				var newAction = {}
-				newAction[result4._id] = {name: result4.text, icon: ""};
-				// $.extend(actions, newAction);
-				outputConnectorsAction.push(newAction);
-			}
-		}
-	}
-	*/
 	
 	selectConnectors(item.getId(), tempOutputConnectors, tempInputConnectors, tempConnections, tempItems, outputConnectorsAction, "Output");
 	selectConnectors(item.getId(), tempInputConnectors, tempOutputConnectors, tempConnections, tempItems, inputConnectorsAction, "Input");
@@ -105,6 +77,7 @@ function contextMenuItem(item, x, y, faceIndex) {
 							var params = key.split(';');
 							var otherItemId = params[0];
 							var type = params[1];
+							var connectorId = params[2];
 							console.log(otherItemId);
 							console.log(type);
 							// return;
@@ -132,7 +105,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 							if (type == "output") {
 								// search inputConnector
 								for (var i = 0; i < tempInputConnectors.length; i++) {
-									if (tempInputConnectors[i].itemId == otherItemId) {
+									// if (tempInputConnectors[i].itemId == otherItemId) {
+									if (tempInputConnectors[i]._id == connectorId) {
 										inputConnector = tempInputConnectors[i];
 										break;
 									}
@@ -156,7 +130,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 							} else { // input
 								// search outputConnector
 								for (var i = 0; i < tempOutputConnectors.length; i++) {
-									if (tempOutputConnectors[i].itemId == otherItemId) {
+									// if (tempOutputConnectors[i].itemId == otherItemId) {
+									if (tempOutputConnectors[i]._id == connectorId) {
 										outputConnector = tempOutputConnectors[i];
 										break;
 									}
