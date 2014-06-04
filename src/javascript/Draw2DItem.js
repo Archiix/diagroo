@@ -107,8 +107,10 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	},
 	
 	addNewItem: function(x, y, indexFaceA, indexFaceB) {
-		var connectorA = this.createConnector(indexFaceA); // output connector
-		var portA = connectorA.createPort(1); // output port
+		// var connectorA = this.createConnector(indexFaceA); // output connector
+		// var portA = connectorA.createPort(1); // output port
+		var connectorA = null;
+		var portA = null;
 		var connectorB = null; // input connector
 		var portB = null; // input port
 		
@@ -117,16 +119,40 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 			if (bestFigure instanceof draw2d.shape.basic.Label) {
 				bestFigure = bestFigure.getParent();
 			}
-			connectorB = bestFigure.createConnector(indexFaceB);
-			portB = connectorB.createPort(0);
-			
-			this.repaint();
-			bestFigure.repaint();
+			if (bestFigure instanceof Draw2DItem) {
+				connectorA = this.createConnector(indexFaceA);
+				portA = connectorA.createPort(1);
+				connectorB = bestFigure.createConnector(indexFaceB);
+				portB = connectorB.createPort(0);
+				
+				this.repaint();
+				bestFigure.repaint();
+			} else if (bestFigure instanceof Draw2DConnector) {
+				if (bestFigure.type == "input") {
+					connectorA = this.createConnector(indexFaceA);
+					portA = connectorA.createPort(1);
+					connectorB = bestFigure;
+					portB = connectorB.getPorts().get(0);
+					
+					this.repaint();
+					bestFigure.getParent().repaint();
+				} else {
+					alert("Only input port !");
+					// on ne créer pas la connection
+					return;
+				}
+			} else {
+				alert("Only input port !");
+				// On ne créer pas la connection
+				return;
+			}
 		} else {
 			var newItem = new Draw2DItem(100, 100, "Item");
 			items.add(newItem);
 			canvas.addFigure(newItem, x - 50, y - 50);
-		
+			
+			connectorA = this.createConnector(indexFaceA);
+			portA = connectorA.createPort(1);
 			connectorB = newItem.createConnector(indexFaceB); // input connector
 			portB = connectorB.createPort(0); // input port
 			

@@ -21,7 +21,7 @@ function selectConnectors(itemId, listOfConnectors, listOfOtherConnectors, listO
 			
 			var prefix = type == "Output" ? ";output" : ";input";
 			var newAction = {}
-			newAction[otherItem._id + prefix + ";" + otherConnector._id] = {name: otherItem.text + " " + otherConnector._id.substring(0, 8), icon: ""};
+			newAction[otherItem._id + prefix + ";" + otherConnector._id + ";" + connection._id] = {name: otherItem.text + " " + otherConnector._id.substring(0, 8), icon: ""};
 			listOfActions.push(newAction);
 		}
 	}
@@ -78,8 +78,10 @@ function contextMenuItem(item, x, y, faceIndex) {
 							var otherItemId = params[0];
 							var type = params[1];
 							var connectorId = params[2];
+							var connectionId = params[3];
 							console.log(otherItemId);
 							console.log(type);
+							console.log(connectionId);
 							// return;
 							
 							console.log('test');
@@ -114,7 +116,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 								// search connection
 								for (var i = 0; i < tempConnections.length; i++) {
 									// if (tempConnections[i].outputConnectorId == inputConnector._id) {
-									if (tempConnections[i].inputConnectorId == inputConnector._id) {
+									// if (tempConnections[i].inputConnectorId == inputConnector._id) {
+									if (tempConnections[i]._id == connectionId) {
 										connection = tempConnections[i];
 										break;
 									}
@@ -139,7 +142,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 								// search connection
 								for (var i = 0; i < tempConnections.length; i++) {
 									// if (tempConnections[i].outputConnectorId == inputConnector._id) {
-									if (tempConnections[i].outputConnectorId == outputConnector._id) {
+									// if (tempConnections[i].outputConnectorId == outputConnector._id) {
+									if (tempConnections[i]._id == connectionId) {
 										connection = tempConnections[i];
 										break;
 									}
@@ -163,29 +167,56 @@ function contextMenuItem(item, x, y, faceIndex) {
 							var draw2DConnection = converter.convertConnection(connection);
 							var draw2DOtherItem = converter.convertItem(otherItem);
 							
+							var outputConnectorExisting = searchDraw2DConnectorById(items, outputDraw2DConnector.getId());
+							var inputConnectorExisting = searchDraw2DConnectorById(items, inputDraw2DConnector.getId());
+							var outputConnectorFlag = false;
+							var inputConnectorFlag = false;
+							if (outputConnectorExisting) { outputConnectorFlag = true; }
+							if (inputConnectorExisting) { inputConnectorFlag = true; }
+							
+							outputDraw2DConnector.createPort(1); // create output port
+							inputDraw2DConnector.createPort(0); // create input port
+							
+							if (outputConnectorFlag) {
+								draw2DConnection.setSource(outputConnectorExisting.getOutputPort(0));
+							} else {
+								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
+							}
+							if (inputConnectorFlag) {
+								draw2DConnection.setTarget(inputConnectorExisting.getInputPort(0));
+							} else {
+								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
+							}
+							
+							console.log("outputConnectorExisting = " + outputConnectorExisting + ", inputConnectorExisting = " + inputConnectorExisting);
+							
 							var itemExisting = itemIsExists(draw2DOtherItem);
 							
 							if (!itemExisting) {
-							
-								outputDraw2DConnector.createPort(1); // create output port
-								inputDraw2DConnector.createPort(0); // create input port
-								
 								canvas.addFigure(draw2DOtherItem);
 								
 								// item.addConnector(outputDraw2DConnector);
 								// draw2DOtherItem.addConnector(inputDraw2DConnector);
 								
 								// add a connection between item and draw2DOtherItem
-								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
-								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
+								// draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
+								// draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
 								if (type == "output") {
-									item.addConnector(outputDraw2DConnector);
-									draw2DOtherItem.addConnector(inputDraw2DConnector);
+									if (!outputConnectorFlag) {
+										item.addConnector(outputDraw2DConnector);
+									}
+									if (!inputConnectorFlag) {
+										draw2DOtherItem.addConnector(inputDraw2DConnector);
+									}
 									
 									// draw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 								} else {
-									item.addConnector(inputDraw2DConnector);
-									draw2DOtherItem.addConnector(outputDraw2DConnector);
+									if (!inputConnectorFlag) {
+										item.addConnector(inputDraw2DConnector);
+									}
+									if (!outputConnectorFlag) {
+										draw2DOtherItem.addConnector(outputDraw2DConnector);
+									}
 									
 									// draw2DConnection.setSourceDecorator(new draw2d.decoration.connection.ArrowDecorator());
 								}
@@ -203,20 +234,25 @@ function contextMenuItem(item, x, y, faceIndex) {
 							} else {
 								error("Block already exists ! [ID = " + itemExisting.getId() + "]");
 								
-								outputDraw2DConnector.createPort(1);
-								inputDraw2DConnector.createPort(0);
-								
 								// item.addConnector(outputDraw2DConnector);
 								// itemExisting.addConnector(inputDraw2DConnector);
 								
-								draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
-								draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
+								// draw2DConnection.setSource(outputDraw2DConnector.getOutputPort(0));
+								// draw2DConnection.setTarget(inputDraw2DConnector.getInputPort(0));
 								if (type == "output") {
-									item.addConnector(outputDraw2DConnector);
-									itemExisting.addConnector(inputDraw2DConnector);
+									if (!outputConnectorFlag) {
+										item.addConnector(outputDraw2DConnector);
+									}
+									if (!inputConnectorFlag) {
+										itemExisting.addConnector(inputDraw2DConnector);
+									}
 								} else {
-									item.addConnector(inputDraw2DConnector);
-									itemExisting.addConnector(outputDraw2DConnector);
+									if (!inputConnectorFlag) {
+										item.addConnector(inputDraw2DConnector);
+									}
+									if (!outputConnectorFlag) {
+										itemExisting.addConnector(outputDraw2DConnector);
+									}
 								}
 								draw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 								
