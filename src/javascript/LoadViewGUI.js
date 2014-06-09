@@ -1,12 +1,12 @@
 
-function loadView(viewName, items, connections, draw2DConnections, canvas) {
+function loadView(layerId, items, connections, draw2DConnections, canvas) {
 	$.ajaxSetup({async:false});
 	
 	/* for the items */
 	
-	var itemsByViewName = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemViewByViewName', {'key': '"' + viewName + '"'}).responseText);
-	for (var i = 0; i < itemsByViewName.rows.length; i++) {
-		var currentItemView = itemsByViewName.rows[i].value;
+	var itemsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemViewByLayerId', {'key': '"' + layerId + '"'}).responseText);
+	for (var i = 0; i < itemsByLayerId.rows.length; i++) {
+		var currentItemView = itemsByLayerId.rows[i].value;
 		
 		var x = currentItemView.x;
 		var y = currentItemView.y;
@@ -26,9 +26,9 @@ function loadView(viewName, items, connections, draw2DConnections, canvas) {
 	}
 	
 	/* for the connectors */
-	var connectorsByViewName = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorViewByViewName', {'key': '"' + viewName + '"'}).responseText);
-	for (var i = 0; i < connectorsByViewName.rows.length; i++) {
-		var currentConnectorView = connectorsByViewName.rows[i].value;
+	var connectorsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorViewByLayerId', {'key': '"' + layerId + '"'}).responseText);
+	for (var i = 0; i < connectorsByLayerId.rows.length; i++) {
+		var currentConnectorView = connectorsByLayerId.rows[i].value;
 		
 		var x = currentConnectorView.x;
 		var y = currentConnectorView.y;
@@ -50,9 +50,9 @@ function loadView(viewName, items, connections, draw2DConnections, canvas) {
 	}
 	
 	/* for the connections */
-	var connectionsByViewName = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionViewByViewName', {'key': '"' + viewName + '"'}).responseText);
-	for (var i = 0; i < connectionsByViewName.rows.length; i++) {
-		var currentConnectionView = connectionsByViewName.rows[i].value;
+	var connectionsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionViewByLayerId', {'key': '"' + layerId + '"'}).responseText);
+	for (var i = 0; i < connectionsByLayerId.rows.length; i++) {
+		var currentConnectionView = connectionsByLayerId.rows[i].value;
 		var connectionId = currentConnectionView.connectionId;
 		var connectionModel = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connectionId).responseText);
 		var inputConnectorId = connectionModel.inputConnectorId;

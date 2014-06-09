@@ -1,5 +1,5 @@
 
-function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem object, connections ==> Connection object
+function saveUpdateView(layerId, items, connections) { // items ==> Draw2DItem object, connections ==> Connection object
 	$.ajaxSetup({async:false});
 	
 	for (var i = 0; i < items.getSize(); i++) {
@@ -13,10 +13,10 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 		console.log(itemId);
 		// est ce que l'itemView existe déjà
 		
-		var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/itemViewIsExisting', {'key': '[' + '"' + viewName + '"' + ', ' + '"' + itemId + '"' + ']'}).responseText);
+		var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/itemViewIsExisting', {'key': '[' + '"' + layerId + '"' + ', ' + '"' + itemId + '"' + ']'}).responseText);
 		if (itemView.rows.length == 0) {
-			// viewName, x, y, itemId
-			var newItemView = new ItemView(viewName, currentItem.getX(), currentItem.getY(), itemId);
+			// layerId, x, y, itemId
+			var newItemView = new ItemView(layerId, currentItem.getX(), currentItem.getY(), itemId);
 			
 			couchDBJQuery.couch.db("diagroo").saveDoc(newItemView, {
 				success: function(data) { // saved !
@@ -30,8 +30,8 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 			// on sauve aussi les connecteurs
 			for (var j = 0; j < currentItem.connectors.getSize(); j++) {
 				var currentConnector = currentItem.connectors.get(j);
-				// viewName, x, y, faceIndex, connectorId
-				var newConnectorView = new ConnectorView(viewName, currentConnector.getX(), currentConnector.getY(), currentConnector.faceIndex, currentConnector.getId());
+				// layerId, x, y, faceIndex, connectorId
+				var newConnectorView = new ConnectorView(layerId, currentConnector.getX(), currentConnector.getY(), currentConnector.faceIndex, currentConnector.getId());
 				
 				couchDBJQuery.couch.db("diagroo").saveDoc(newConnectorView, {
 					success: function(data) { // saved !
@@ -59,7 +59,7 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 				var currentConnector = currentItem.connectors.get(j);
 				var idConnector = currentConnector.getId();
 				// get ConnectorView object
-				var connectorView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorView', {'key': '[' + '"' + viewName + '"' + ', ' + '"' + idConnector + '"' + ']'}).responseText);
+				var connectorView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorView', {'key': '[' + '"' + layerId + '"' + ', ' + '"' + idConnector + '"' + ']'}).responseText);
 				if (connectorView.rows.length > 0) {
 					var connectorViewToUpdate = connectorView.rows[0].value;
 					
@@ -77,7 +77,7 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 					
 				} else {
 					console.log("get connector view error !");
-					var newConnectorView = new ConnectorView(viewName, currentConnector.getX(), currentConnector.getY(), currentConnector.faceIndex, currentConnector.getId());
+					var newConnectorView = new ConnectorView(layerId, currentConnector.getX(), currentConnector.getY(), currentConnector.faceIndex, currentConnector.getId());
 					couchDBJQuery.couch.db("diagroo").saveDoc(newConnectorView, {
 						success: function(data) {
 						},
@@ -91,10 +91,10 @@ function saveUpdateView(viewName, items, connections) { // items ==> Draw2DItem 
 	for (var i = 0; i < connections.getSize(); i++) {
 		var currentConnection = connections.get(i);
 		console.log(currentConnection._id);
-		var connectionView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionView', {'key': '["'+viewName+'","'+currentConnection._id+'"]'}).responseText);
+		var connectionView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionView', {'key': '["'+layerId+'","'+currentConnection._id+'"]'}).responseText);
 		if (connectionView.rows.length == 0) {
-			// viewName, vertices, connectionId
-			var newConnectionView = new ConnectionView(viewName, [], currentConnection._id);
+			// layerId, vertices, connectionId
+			var newConnectionView = new ConnectionView(layerId, [], currentConnection._id);
 			
 			couchDBJQuery.couch.db("diagroo").saveDoc(newConnectionView, {
 				success: function(data) {

@@ -9,6 +9,10 @@ function saveUpdateModel(modelName, items, connections, draw2DConnections) {
 		console.log("model existe pas");
 		var newModel = new Model(modelId, modelName);
 		save(newModel);
+		// sauver la première couche !
+		var layer1Id = couchDBJQuery.couch.newUUID();
+		var layer1 = new Layer(layer1Id, modelId, "layer0", 0);
+		save(layer1);
 	} else {
 		console.log("model existe");
 		modelId = models.rows[0].value._id;

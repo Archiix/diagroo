@@ -440,6 +440,7 @@
 		<script type="text/javascript" src="src/javascript/Item.js"></script>
 		<script type="text/javascript" src="src/javascript/Connector.js"></script>
 		<script type="text/javascript" src="src/javascript/Connection.js"></script>
+		<script type="text/javascript" src="src/javascript/Layer.js"></script>
 		<script type="text/javascript" src="src/javascript/Queries.js"></script>
 		<script type="text/javascript" src="src/javascript/Converter.js"></script>
 		<script type="text/javascript" src="src/javascript/ItemView.js"></script>
@@ -456,10 +457,13 @@
 			/* var */ converter = new ConverterJSON();
 			
 			/* var */ items = new draw2d.util.ArrayList(); // Draw2DItem object
+			/* var */ nextItems = new draw2d.util.ArrayList();
 			/* var */ connections = new draw2d.util.ArrayList(); // Connection object
+			/* var */ nextConnections = new draw2d.util.ArrayList();
 			// TODO liste de Draw2DConnection
 			// ...
 			/* var */ draw2DConnections = new draw2d.util.ArrayList();
+			/* var */ nextDraw2DConnections = new draw2d.util.ArrayList();
 			
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
 			
@@ -476,11 +480,11 @@
 				return false;
 			};
 			
-			addItemVGlobal = function(item) {
+			addItemVGlobal = function(item, itemsList) {
 				if (itemIsExists(item)) {
 					error("Block already exists !");
 				} else {
-					items.add(item);
+					itemsList.add(item);
 					canvas.addFigure(item, 10, 10);
 				}
 			};
@@ -566,7 +570,13 @@
 					}
 					figure.getParent().repaint();
 				}
-			}
+			};
+			policy.onMouseUp = function(figure, x, y, shiftKey, ctrlKey) {
+				var bestFigure = canvas.getBestFigure(x, y);
+				if (bestFigure != null && bestFigure instanceof Draw2DItem) {
+					console.log("[index.htm] onMouseUp, Draw2DItem::getText() = " + bestFigure.getText());
+				}
+			};
 			canvas.installEditPolicy(policy);
 			/* end globals variables declaration */
 			
@@ -587,7 +597,10 @@
 				return null;
 			};
 			
-			$("#clearButton").click(function() {
+			var layer = false;
+			var prevLayer = "";
+			
+			var clearCanvas = function() {
 				for (var i = 0; i < items.getSize(); i++) {
 					items.get(i).removeAllConnections();
 					canvas.removeFigure(items.get(i));
@@ -596,12 +609,20 @@
 				connections = new draw2d.util.ArrayList();
 				draw2DConnections = new draw2d.util.ArrayList();
 				
-				// test 28.05.2014
-				/*
-				$.ajaxSetup({async:false});
-				var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/itemViewIsExisting', {'key': '[' + '"view1"' + ', ' + '"02c19792-ed16-1998-1cb3-8bf64a363f7c"' + ']'}).responseText);
-				console.log(itemView);
-				*/
+				for (var i = 0; i < nextItems.getSize(); i++) {
+					nextItems.get(i).removeAllConnections();
+					canvas.removeFigure(nextItems.get(i));
+				}
+				nextItems = new draw2d.util.ArrayList();
+				nextConnections = new draw2d.util.ArrayList();
+				nextDraw2DConnections = new draw2d.util.ArrayList();
+				
+				layer = false;
+				prevLayer = "";
+			};
+			
+			$("#clearButton").click(function() {
+				clearCanvas();
 			});
 			
 			/* Delete all documents to database */
@@ -620,6 +641,8 @@
 								case "_design/model":
 									break;
 								case "_design/view":
+									break;
+								case "_design/layer":
 									break;
 								default:
 									var docToDelete = {
@@ -647,7 +670,7 @@
 				
 				// canvas.addFigure(newItem, 10, 10);
 				// items.add(newItem);
-				addItemVGlobal(newItem);
+				addItemVGlobal(newItem, items);
 			});
 			
 			/* Save the model + save all Item, Connector and Connection */
@@ -663,36 +686,38 @@
 			$("#saveView").click(function() {
 				// clear log message
 				clear();
-				var viewName = $("#viewNameInput").val();
-				
-				saveUpdateView(viewName, items, connections) // SaveUpdateViewGUI.js
+				// var viewName = $("#viewNameInput").val();
+				var layerId = $("#layersSelect option:selected").val();
+				if (layer == false) {
+					saveUpdateView(layerId, items, connections) // SaveUpdateViewGUI.js
+				} else {
+					saveUpdateView(layerId, nextItems, nextConnections) // SaveUpdateViewGUI.js
+				}
 			});
 			
 			$("#loadViewButton").click(function() {
-				var viewName = $("#viewNameInput").val();
+				// var viewName = $("#viewNameInput").val();
+				var layerId = $("#layersSelect option:selected").val();
 				
-				loadView(viewName, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
+				loadView(layerId, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
 			});
 			
 			/* Get all models + get all items from model name */
 			$("#getModelsButton").click(function() {
-				
 				getModels($("#modelsSelect"));
-				
 			});
 			
 			/* Get all items from a model name */
 			$("#modelsSelect").click(function() {
-				
-				var modelName = $("#modelsSelect option:selected").val();
-				if (modelName) {
-					getItems(modelName, $("#itemsSelect"));
+				var modelId = $("#modelsSelect option:selected").val();
+				console.log(modelId);
+				if (modelId) {
+					getItems(modelId, $("#itemsSelect"));
+					getLayers(modelId, $("#layersSelect"));
 				}
-				
 			});
 			
 			$("#itemsSelect").dblclick(function() {
-				
 				var itemId = $("#itemsSelect option:selected").val();
 				if (itemId) {
 					couchDBJQuery.couch.db("diagroo").openDoc(itemId, {
@@ -701,14 +726,67 @@
 							
 							// canvas.addFigure(itemDraw2D, 10, 10);
 							// items.add(itemDraw2D);
-							addItemVGlobal(itemDraw2D);
+							if (layer) {
+								addItemVGlobal(itemDraw2D, nextItems);
+							} else {
+								addItemVGlobal(itemDraw2D, items);
+							}
 						},
 						error: function(status) {
 							console.log(status);
 						}
 					});
 				}
+			});
+			
+			$("#layersSelect").dblclick(function() {
+				// vider le canvas et les listes
+				clearCanvas();
 				
+				var layerId = $("#layersSelect option:selected").val();
+				var modelId = $("#modelsSelect option:selected").val();
+				if (layerId == prevLayer) {
+					layer = true;
+					prevLayer = "";
+				} else {
+					layer = false;
+					prevLayer = layerId;
+				}
+				switch (layer) {
+					case true:
+						/* Afficher le mode couche */
+						console.log("mode couche");
+						// créer une nouvelle couche
+						$.ajaxSetup({async:false});
+						var selectedLayer = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + layerId).responseText);
+						var nextIndex = selectedLayer.index + 1;
+						var nextLayer = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/layer/_view/getLayerByIndex', {'key': '["'+modelId+'",'+nextIndex+']'}).responseText);
+						if (nextLayer.rows.length == 0) {
+							loadView(layerId, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
+							// création de la couche inférieure
+							var newId = couchDBJQuery.couch.newUUID();
+							var newLayer = new Layer(newId, modelId, "layer" + nextIndex, nextIndex);
+							save(newLayer);
+							$("#layersSelect").append('<option value="' + newId + '">' + "layer" + nextIndex + '</option>');
+						} else {
+							loadView(layerId, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
+							loadView(nextLayer.rows[0].value._id, nextItems, nextConnections, nextDraw2DConnections, canvas); // LoadViewGUI.js
+							// set layer style
+							for (var i = 0; i < items.getSize(); i++) {
+								items.get(i).setLayerStyle();
+							}
+							for (var i = 0; i < draw2DConnections.getSize(); i++) {
+								draw2DConnections.get(i).setLayerStyle();
+							}
+						}
+						break;
+					case false:
+						/* Afficher simplement la couche */
+						console.log("mode vue normal");
+						// var layerId = $("#layersSelect option:selected").val();
+						loadView(layerId, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
+						break;
+				}
 			});
 		});
 		</script>
@@ -728,6 +806,7 @@
 			<button id="saveModel">Save Model</button>
 			<input type="text" id="modelNameInput" value="model name" />
 			<button id="saveView">Save View</button>
+			<button id="loadViewButton">Load View</button>
 			<input type="text" id="viewNameInput" value="view name" />
 			<button id="clearButton">Clear</button>
 			<button id="resetButton">Reset</button>
@@ -741,14 +820,16 @@
 							<option value="">No Models</option>
 						</select>
 					</td>
-					<td>Items</td>
+					<!-- <td>Items</td> -->
 					<td>
 						<select id="itemsSelect" multiple="multiple">
 							<option value="">No Items</option>
 						</select>
 					</td>
 					<td>
-						<button id="loadViewButton">Load View</button>
+						<select id="layersSelect" multiple="multiple">
+							<option value="">No Layers</option>
+						</select>
 					</td>
 				</tr>
 			</table>

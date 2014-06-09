@@ -74,6 +74,17 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.tooltip = null;
 	},
 	
+	setLayerStyle: function() {
+		console.log("[Draw2DItem] setLayerStyle");
+		this.setAlpha(0.5);
+		this.label.setAlpha(0.5);
+		this.northPort.setAlpha(0.5);
+		this.southPort.setAlpha(0.5);
+		this.westPort.setAlpha(0.5);
+		this.eastPort.setAlpha(0.5);
+		this.setDraggable(false);
+	},
+	
 	onDoubleClick: function() {
 		console.log("[Draw2DItem.js] Draw2DItem ID = " + this.getId());
 	},

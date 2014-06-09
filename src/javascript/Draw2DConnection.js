@@ -33,5 +33,10 @@ var Draw2DConnection = draw2d.Connection.extend({
 	
 	onDoubleClick: function() {
 		console.log("[Draw2DConnection.js] Draw2DConnection ID = " + this.getId());
+	},
+	
+	setLayerStyle: function() {
+		this.setAlpha(0.5);
+		this.label.setAlpha(0.5);
 	}
 });
