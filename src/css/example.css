@@ -8,14 +8,16 @@ body {
   margin: 10px;
 }
 
+/*
 .title {
   background-color: #2175d4;
   color: #fff;
   padding: 5px;
   border-radius: 15px;
 }
+*/
 
-
+/*
 #inputbox{
  border:1px solid white;
  border-radius:10px;
@@ -27,7 +29,6 @@ body {
  left:10px
 }
 
-
 .shadow {
  -moz-box-shadow: 3px 3px 4px #000;
  -webkit-box-shadow: 3px 3px 4px #000;
@@ -35,3 +36,4 @@ body {
  -ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000')";
  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
 }
+*/

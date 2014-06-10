@@ -232,8 +232,6 @@ function contextMenuItem(item, x, y, faceIndex) {
 							
 							// already exists
 							} else {
-								error("Block already exists ! [ID = " + itemExisting.getId() + "]");
-								
 								// item.addConnector(outputDraw2DConnector);
 								// itemExisting.addConnector(inputDraw2DConnector);
 								

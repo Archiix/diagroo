@@ -78,6 +78,9 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		console.log("[Draw2DItem] setLayerStyle");
 		this.setAlpha(0.5);
 		this.label.setAlpha(0.5);
+		for (var i = 0; i < this.connectors.getSize(); i++) {
+			this.connectors.get(i).setAlpha(0.5);
+		}
 		this.northPort.setAlpha(0.5);
 		this.southPort.setAlpha(0.5);
 		this.westPort.setAlpha(0.5);
@@ -177,7 +180,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		c.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 		canvas.addFigure(c);
 		
-		var newConnection = new Connection(c.id, connectorB.id, connectorA.id, c.getText());
+		var layerId = $("#layersSelect option:selected").val(); // get the current layer selected by the user
+		var newConnection = new Connection(c.id, connectorB.id, connectorA.id, layerId, c.getText());
 		connections.add(newConnection);
 		draw2DConnections.add(c);
 	},

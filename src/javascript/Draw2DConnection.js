@@ -36,7 +36,7 @@ var Draw2DConnection = draw2d.Connection.extend({
 	},
 	
 	setLayerStyle: function() {
-		this.setAlpha(0.5);
+		this.setAlpha(0.1);
 		this.label.setAlpha(0.5);
 	}
 });

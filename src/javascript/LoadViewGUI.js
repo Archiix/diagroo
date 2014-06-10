@@ -1,10 +1,10 @@
 
-function loadView(layerId, items, connections, draw2DConnections, canvas) {
+function loadView(layerId, viewId, items, connections, draw2DConnections, canvas) {
 	$.ajaxSetup({async:false});
 	
 	/* for the items */
 	
-	var itemsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemViewByLayerId', {'key': '"' + layerId + '"'}).responseText);
+	var itemsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
 	for (var i = 0; i < itemsByLayerId.rows.length; i++) {
 		var currentItemView = itemsByLayerId.rows[i].value;
 		
@@ -26,7 +26,7 @@ function loadView(layerId, items, connections, draw2DConnections, canvas) {
 	}
 	
 	/* for the connectors */
-	var connectorsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorViewByLayerId', {'key': '"' + layerId + '"'}).responseText);
+	var connectorsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
 	for (var i = 0; i < connectorsByLayerId.rows.length; i++) {
 		var currentConnectorView = connectorsByLayerId.rows[i].value;
 		
@@ -50,7 +50,7 @@ function loadView(layerId, items, connections, draw2DConnections, canvas) {
 	}
 	
 	/* for the connections */
-	var connectionsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionViewByLayerId', {'key': '"' + layerId + '"'}).responseText);
+	var connectionsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
 	for (var i = 0; i < connectionsByLayerId.rows.length; i++) {
 		var currentConnectionView = connectionsByLayerId.rows[i].value;
 		var connectionId = currentConnectionView.connectionId;

@@ -441,6 +441,7 @@
 		<script type="text/javascript" src="src/javascript/Connector.js"></script>
 		<script type="text/javascript" src="src/javascript/Connection.js"></script>
 		<script type="text/javascript" src="src/javascript/Layer.js"></script>
+		<script type="text/javascript" src="src/javascript/View.js"></script>
 		<script type="text/javascript" src="src/javascript/Queries.js"></script>
 		<script type="text/javascript" src="src/javascript/Converter.js"></script>
 		<script type="text/javascript" src="src/javascript/ItemView.js"></script>
@@ -448,28 +449,57 @@
 		<script type="text/javascript" src="src/javascript/ConnectionView.js"></script>
 		
 		<script type="text/javascript">
+		function destroyErrorMessages() {
+			$("#errors").remove();
+		}
+		function displayErrorMessages(values, variables) {
+			var errorsArea = $('<div>', {
+				id: 'errors'
+			});
+			
+			var nbErrors = 0;
+			
+			for (var i = 0; i < values.length; i++) {
+				switch (values[i]) {
+					case null:
+						errorsArea.append('<div><span class="label label-danger">ERROR: ' + variables[i] + ' must be not null.</span></div>');
+						nbErrors++;
+						break;
+					case undefined:
+						errorsArea.append('<div><span class="label label-danger">ERROR: ' + variables[i] + ' must be not undefined.</span></div>');
+						nbErrors++;
+						break;
+					case "":
+						errorsArea.append('<div><span class="label label-danger">ERROR: ' + variables[i] + ' must be not empty.</span></div>');
+						nbErrors++;
+						break;
+					case 0:
+						errorsArea.append('<div><span class="label label-danger">ERROR: ' + variables[i] + ' must be not 0.</span></div>');
+						nbErrors++;
+						break;
+					default:
+						break;
+				}
+			}
+			$("#nav").append(errorsArea);
+			
+			window.setTimeout(destroyErrorMessages, 5000);
+			
+			return !(nbErrors > 0);
+		}
+		
 		$(window).load(function() {
 			/* globals variables declaration */
-			success = function(msg) { $("#success").text(msg); };
-			error = function(msg) { $("#error").text(msg); };
-			clear = function() { success(""); error(""); };
-			
 			/* var */ converter = new ConverterJSON();
 			
 			/* var */ items = new draw2d.util.ArrayList(); // Draw2DItem object
-			/* var */ nextItems = new draw2d.util.ArrayList();
+			/* var */ // nextItems = new draw2d.util.ArrayList();
 			/* var */ connections = new draw2d.util.ArrayList(); // Connection object
-			/* var */ nextConnections = new draw2d.util.ArrayList();
-			// TODO liste de Draw2DConnection
-			// ...
+			/* var */ // nextConnections = new draw2d.util.ArrayList();
 			/* var */ draw2DConnections = new draw2d.util.ArrayList();
-			/* var */ nextDraw2DConnections = new draw2d.util.ArrayList();
-			
+			/* var */ // nextDraw2DConnections = new draw2d.util.ArrayList();
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
 			
-			/* TODO: move global var to a speciel file */
-			// item is type of Draw2DItem
-			// to get id with item.getId()
 			itemIsExists = function(item) {
 				for (var i = 0; i < items.getSize(); i++) {
 					var currentItem = items.get(i);
@@ -491,6 +521,7 @@
 			
 			updateConnectionsList = function(connector) {
 				console.assert(connections.getSize() === draw2DConnections.getSize());
+				
 				switch (connector.type) {
 					case "output":
 						for (var i = 0; i < connections.getSize(); i++) {
@@ -511,15 +542,32 @@
 						}
 						break;
 				}
-				console.log("connections size = " + connections.getSize());
-				console.log("draw2DConnection size = " + draw2DConnections.getSize());
+			};
+			
+			var clearCanvas = function() {
+				for (var i = 0; i < items.getSize(); i++) {
+					items.get(i).removeAllConnections();
+					canvas.removeFigure(items.get(i));
+				}
+				items = new draw2d.util.ArrayList();
+				connections = new draw2d.util.ArrayList();
+				draw2DConnections = new draw2d.util.ArrayList();
+				
+				/*
+				for (var i = 0; i < nextItems.getSize(); i++) {
+					nextItems.get(i).removeAllConnections();
+					canvas.removeFigure(nextItems.get(i));
+				}
+				nextItems = new draw2d.util.ArrayList();
+				nextConnections = new draw2d.util.ArrayList();
+				nextDraw2DConnections = new draw2d.util.ArrayList();
+				*/
 			};
 			
 			var policy = new draw2d.policy.canvas.CanvasPolicy();
 			var tempFigure = null;
 			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
 				figure = canvas.getBestFigure(x, y);
-				// faire mieux !!!
 				if (figure != null && (figure instanceof Draw2DItem || figure.getParent())) {
 					if (!figure.getParent()) {
 						figure.mouseEntered();
@@ -529,13 +577,8 @@
 					for (var i = 0; i < items.getSize(); i++) {
 						items.get(i).mouseLeaved();
 					}
-					/*
-					if (tempFigure != null) {
-						tempFigure.mouseLeaved();
-					}
-					*/
 				}
-				// déplacer un connecteur
+				// déplacement d'un connecteur
 				if (figure != null && figure instanceof Draw2DConnector && ctrlKey) {
 					var parent = figure.getParent();
 					var xParent = parent.getX();        var yParent = parent.getY();
@@ -580,52 +623,137 @@
 			canvas.installEditPolicy(policy);
 			/* end globals variables declaration */
 			
-			draw2d.Connection.createConnection = function(sourcePort, targetPort) {
-				/*
-				var newDraw2DConnection = new Draw2DConnection();
-				
-				var inputConnectorId = targetPort.parent.id;
-				var outputConnectorId = sourcePort.parent.id;
-				
-				var newConnection = new Connection(newDraw2DConnection.getId(), inputConnectorId, outputConnectorId, newDraw2DConnection.getText());
-				connections.add(newConnection);
-				draw2DConnections.add(newDraw2DConnection);
-				
-				// return my special kind of connection
-				return newDraw2DConnection;
-				*/
-				return null;
-			};
+			var layerMode = false;
+			var prevView = "";
 			
-			var layer = false;
-			var prevLayer = "";
+			// Load all models
+			getModels($("#modelsSelect"));
 			
-			var clearCanvas = function() {
-				for (var i = 0; i < items.getSize(); i++) {
-					items.get(i).removeAllConnections();
-					canvas.removeFigure(items.get(i));
+			/* modelsSelect click event */
+			$("#modelsSelect").click(function() {
+				var modelId = $("#modelsSelect option:selected").val(); // model id
+				if (modelId) {
+					getItems(modelId, $("#itemsSelect"));
+					getLayers(modelId, $("#layersSelect"));
+					getViews(modelId, $("#viewsSelect"));
 				}
-				items = new draw2d.util.ArrayList();
-				connections = new draw2d.util.ArrayList();
-				draw2DConnections = new draw2d.util.ArrayList();
-				
-				for (var i = 0; i < nextItems.getSize(); i++) {
-					nextItems.get(i).removeAllConnections();
-					canvas.removeFigure(nextItems.get(i));
+			});
+			/* itemsSelect double click event */
+			$("#itemsSelect").dblclick(function() {
+				var itemId = $("#itemsSelect option:selected").val(); // item id
+				if (itemId) {
+					couchDBJQuery.couch.db("diagroo").openDoc(itemId, {
+						success: function(data) {
+							var itemDraw2D = converter.convertItem(data);
+							addItemVGlobal(itemDraw2D, items); // ajouter de façon unique
+						},
+						error: function(status) {
+							console.log(status);
+						}
+					});
 				}
-				nextItems = new draw2d.util.ArrayList();
-				nextConnections = new draw2d.util.ArrayList();
-				nextDraw2DConnections = new draw2d.util.ArrayList();
+			});
+			/* layersSelect double click event */
+			$("#layersSelect").dblclick(function() {
+				clearCanvas();
 				
-				// layer = false;
-				// prevLayer = "";
-			};
-			
+				var layerId = $("#layersSelect option:selected").val();
+				var viewId = $("#viewsSelect option:selected").val();
+				
+				if (!displayErrorMessages([layerId, viewId], ['layer id', 'view id'])) {
+					return;
+				}
+				
+				if (layerId == prevView) {
+					layerMode = true;
+					prevView = "";
+				} else {
+					layerMode = false;
+					prevView = layerId;
+				}
+				
+				switch (layerMode) {
+					case true:
+							loadView(layerId, viewId, items, connections, draw2DConnections, canvas);
+							
+							for (var i = 0; i < items.getSize(); i++) {
+								items.get(i).setLayerStyle();
+							}
+							for (var i = 0; i < draw2DConnections.getSize(); i++) {
+								draw2DConnections.get(i).setLayerStyle();
+							}
+							
+							// afficher la couche du dessus !
+							// TODO ...
+						break;
+					case false:
+						loadView(layerId, viewId, items, connections, draw2DConnections, canvas);
+						break;
+				}
+			});
+			/* newItemButton click event */
+			$("#newItemButton").click(function() {
+				var newItem = new Draw2DItem(100, 100, "item");
+				addItemVGlobal(newItem, items);
+			});
+			/* newModelButton click event */
+			$("#newModelButton").click(function() {
+				var modelName = $("#modelNameInput").val();
+				var modelId = couchDBJQuery.couch.newUUID();
+				var newModel = new Model(modelId, modelName);
+				$("#modelsSelect").append('<option value="'+modelId+'">'+modelName+'</option>');
+				save(newModel);
+			});
+			/* newLayerButton click event */
+			$("#newLayerButton").click(function() {
+				var modelId = $("#modelsSelect option:selected").val();
+				var layerName = $("#layerNameInput").val();
+				var layerId = couchDBJQuery.couch.newUUID();
+				var params = layerName.split(';');
+				if (!displayErrorMessages([layerName, params[0], params[1]], ['layer name', 'layer name', 'layer index'])) {
+					return;
+				}
+				var newLayer = new Layer(layerId, modelId, params[0], parseInt(params[1]));
+				$("#layersSelect").append('<option value="'+layerId+'">'+params[0]+'</option>');
+				save(newLayer);
+			});
+			/* newViewButton click event */
+			$("#newViewButton").click(function() {
+				var modelId = $("#modelsSelect option:selected").val();
+				var viewName = $("#viewNameInput").val();
+				var viewId = couchDBJQuery.couch.newUUID();
+				if (!displayErrorMessages([modelId, viewName], ['model id', 'view name'])) {
+					return;
+				}
+				var newView = new View(viewId, modelId, viewName);
+				$("#viewsSelect").append('<option value="'+viewId+'">'+viewName+'</option>');
+				save(newView);
+			});
+			/* saveModelButton click event */
+			$("#saveModelButton").click(function() { // save or update an existing model
+				var modelId = $("#modelsSelect option:selected").val();
+				var layerId = $("#layersSelect option:selected").val();
+				if (!displayErrorMessages([modelId, layerId], ['model id', 'layer id'])) {
+					return;
+				}
+				saveUpdateModel(modelId, layerId, items, connections, draw2DConnections);
+			});
+			/* saveViewButton click event */
+			$("#saveViewButton").click(function() { // save or update an existing view
+				// ***View référence un objet Layer
+				// ***View référence un objet View
+				var layerId = $("#layersSelect option:selected").val();
+				var viewId = $("#viewsSelect option:selected").val();
+				if (!displayErrorMessages([layerId, viewId], ['layer id', 'view id'])) {
+					return;
+				}
+				saveUpdateView(layerId, viewId, items, connections);
+			});
+			/* clearButton click event */
 			$("#clearButton").click(function() {
 				clearCanvas();
 			});
-			
-			/* Delete all documents to database */
+			/* resetButton click event */
 			$("#resetButton").click(function() {
 				couchDBJQuery.couch.db("diagroo").allDocs({
 					success: function(data) {
@@ -661,179 +789,43 @@
 					}
 				});
 			});
-			
-			// Add a new Item (x, y) = (10, 10), (w, h) = (100, 100)
-			$("#newItemButton").click(function() {
-				console.log("#newItemButton click event");
-				
-				var newItem = new Draw2DItem(100, 100, "item");
-				
-				// canvas.addFigure(newItem, 10, 10);
-				// items.add(newItem);
-				addItemVGlobal(newItem, items);
-			});
-			
-			/* Save the model + save all Item, Connector and Connection */
-			$("#saveModel").click(function() {
-				// clear log message
-				clear();
-				var modelName = $("#modelNameInput").val();
-				
-				saveUpdateModel(modelName, items, connections, draw2DConnections); // SaveUpdateModelGUI.js
-			});
-			
-			/* Save the view + save all ItemView */
-			$("#saveView").click(function() {
-				// clear log message
-				clear();
-				// var viewName = $("#viewNameInput").val();
-				var layerId = $("#layersSelect option:selected").val();
-				if (layer == false) {
-					saveUpdateView(layerId, items, connections) // SaveUpdateViewGUI.js
-				} else {
-					saveUpdateView(layerId, nextItems, nextConnections) // SaveUpdateViewGUI.js
-				}
-			});
-			
-			$("#loadViewButton").click(function() {
-				// var viewName = $("#viewNameInput").val();
-				var layerId = $("#layersSelect option:selected").val();
-				
-				loadView(layerId, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
-			});
-			
-			/* Get all models + get all items from model name */
-			$("#getModelsButton").click(function() {
-				getModels($("#modelsSelect"));
-			});
-			
-			/* Get all items from a model name */
-			$("#modelsSelect").click(function() {
-				var modelId = $("#modelsSelect option:selected").val();
-				console.log(modelId);
-				if (modelId) {
-					getItems(modelId, $("#itemsSelect"));
-					getLayers(modelId, $("#layersSelect"));
-				}
-			});
-			
-			$("#itemsSelect").dblclick(function() {
-				var itemId = $("#itemsSelect option:selected").val();
-				if (itemId) {
-					couchDBJQuery.couch.db("diagroo").openDoc(itemId, {
-						success: function(data) {
-							var itemDraw2D = converter.convertItem(data);
-							
-							// canvas.addFigure(itemDraw2D, 10, 10);
-							// items.add(itemDraw2D);
-							if (layer) {
-								addItemVGlobal(itemDraw2D, nextItems);
-							} else {
-								addItemVGlobal(itemDraw2D, items);
-							}
-						},
-						error: function(status) {
-							console.log(status);
-						}
-					});
-				}
-			});
-			
-			$("#layersSelect").dblclick(function() {
-				// vider le canvas et les listes
-				clearCanvas();
-				
-				var layerId = $("#layersSelect option:selected").val();
-				var modelId = $("#modelsSelect option:selected").val();
-				if (layerId == prevLayer) {
-					layer = true;
-					prevLayer = "";
-				} else {
-					layer = false;
-					prevLayer = layerId;
-				}
-				switch (layer) {
-					case true:
-						/* Afficher le mode couche */
-						console.log("mode couche");
-						// créer une nouvelle couche
-						$.ajaxSetup({async:false});
-						var selectedLayer = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + layerId).responseText);
-						var nextIndex = selectedLayer.index + 1;
-						var nextLayer = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/layer/_view/getLayerByIndex', {'key': '["'+modelId+'",'+nextIndex+']'}).responseText);
-						if (nextLayer.rows.length == 0) {
-							loadView(layerId, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
-							// création de la couche inférieure
-							var newId = couchDBJQuery.couch.newUUID();
-							var newLayer = new Layer(newId, modelId, "layer" + nextIndex, nextIndex);
-							save(newLayer);
-							$("#layersSelect").append('<option value="' + newId + '">' + "layer" + nextIndex + '</option>');
-						} else {
-							loadView(layerId, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
-							loadView(nextLayer.rows[0].value._id, nextItems, nextConnections, nextDraw2DConnections, canvas); // LoadViewGUI.js
-							// set layer style
-							for (var i = 0; i < items.getSize(); i++) {
-								items.get(i).setLayerStyle();
-							}
-							for (var i = 0; i < draw2DConnections.getSize(); i++) {
-								draw2DConnections.get(i).setLayerStyle();
-							}
-						}
-						break;
-					case false:
-						/* Afficher simplement la couche */
-						console.log("mode vue normal");
-						// var layerId = $("#layersSelect option:selected").val();
-						loadView(layerId, items, connections, draw2DConnections, canvas); // LoadViewGUI.js
-						break;
-				}
-			});
 		});
 		</script>
-		
 		<!-- GUI + CouchDB calls -->
 		<script type="text/javascript" src="src/javascript/SaveUpdateModelGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/GetModelsAndItemsGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/ContextMenuItemGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/SaveUpdateViewGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/LoadViewGUI.js"></script>
-		
 	</head>
 	<body>
-		<div style="margin: 10px">
-			<h2><span class="title">diagroo - Relational diagram to view an IT infrastructure</span></h2>
+		<div id="nav" style="margin: 10px">
+			<h1>diagroo - Relational diagram to view an IT infrastructure</h1>
+			<select id="modelsSelect" multiple="multiple">
+				<option value="">No Models</option>
+			</select>
+			<select id="itemsSelect" multiple="multiple">
+				<option value="">No Items</option>
+			</select>
+			<select id="viewsSelect" multiple="multiple">
+				<option value="">No Views</option>
+			</select>
+			<select id="layersSelect" multiple="multiple">
+				<option value="">No Layers</option>
+			</select>
+			<hr />
 			<button id="newItemButton">New Item</button>
-			<button id="saveModel">Save Model</button>
+			<button id="newModelButton">New Model</button>
 			<input type="text" id="modelNameInput" value="model name" />
-			<button id="saveView">Save View</button>
-			<button id="loadViewButton">Load View</button>
+			<button id="newLayerButton">New Layer</button>
+			<input type="text" id="layerNameInput" value="layer name" />
+			<button id="newViewButton">New View</button>
 			<input type="text" id="viewNameInput" value="view name" />
+			<button id="saveModelButton">Save/Update Model</button>
+			<button id="saveViewButton">Save/Update View</button>
 			<button id="clearButton">Clear</button>
 			<button id="resetButton">Reset</button>
-			<span id="success" style="color: green"></span>
-			<span id="error" style="color: red"></span>
-			<table style="margin-top: 10px;  border-collapse: separate; border-spacing: 5px 8px;">
-				<tr>
-					<td><button id="getModelsButton">Get Models</button></td>
-					<td>
-						<select id="modelsSelect" multiple="multiple">
-							<option value="">No Models</option>
-						</select>
-					</td>
-					<!-- <td>Items</td> -->
-					<td>
-						<select id="itemsSelect" multiple="multiple">
-							<option value="">No Items</option>
-						</select>
-					</td>
-					<td>
-						<select id="layersSelect" multiple="multiple">
-							<option value="">No Layers</option>
-						</select>
-					</td>
-				</tr>
-			</table>
 		</div>
-		<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 500px; -webkit-tap-highlight-color: rgba(0,0,0,0);"></div>
+		<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 600px"></div>
 	</body>
 </html>

@@ -1,7 +1,5 @@
 
 function getModels(modelsSelectHTML) {
-	
-	
 	couchDBJQuery.couch.db("diagroo").view("model/getModelByName", {
 		success: function(data) {
 			modelsSelectHTML.empty();
@@ -19,11 +17,9 @@ function getModels(modelsSelectHTML) {
 			console.log(status);
 		}
 	});
-	
 }
 
 function getItems(modelId, itemsSelectHTML) {
-	
 	couchDBJQuery.couch.db("diagroo").view("model/getItemsByModel", {
 		success: function(data) {
 			itemsSelectHTML.empty();
@@ -42,7 +38,6 @@ function getItems(modelId, itemsSelectHTML) {
 		},
 		key: modelId
 	});
-	
 }
 
 function getLayers(modelId, layersSelectHTML) {
@@ -58,6 +53,27 @@ function getLayers(modelId, layersSelectHTML) {
 				var id = layersList[i].id;
 				var text = layersList[i].value;
 				layersSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+			}
+		},
+		error: function(status) {
+		},
+		key: modelId
+	});
+}
+
+function getViews(modelId, viewsSelectHTML) {
+	couchDBJQuery.couch.db("diagroo").view("view/getViewsByModel", {
+		success: function(data) {
+			viewsSelectHTML.empty();
+			var viewsList = data.rows;
+			if (viewsList.length == 0) {
+				viewsSelectHTML.append('<option value="">No Views</option>');
+			} else {
+				for (var i = 0; i < viewsList.length; i++) {
+					var id = viewsList[i].id;
+					var text = viewsList[i].value;
+					viewsSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+				}
 			}
 		},
 		error: function(status) {
