@@ -1,11 +1,12 @@
 body {
-  // padding-top: 50px;
+  /* padding-top: 50px; */
+  padding: 0 10px 10px 0;
 }
 
 #gfx_holder{
-  // background: transparent url(img/background.png);
-  background-color: #eeeeee;
-  margin: 10px;
+  /* background: transparent url(img/background.png); */
+  background-color: #eee;
+  // margin: 10px;
 }
 
 /*

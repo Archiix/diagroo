@@ -186,20 +186,6 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		draw2DConnections.add(c);
 	},
 	
-	mouseEntered: function() {
-		this.northPort.setVisible(true);
-		this.southPort.setVisible(true);
-		this.eastPort.setVisible(true);
-		this.westPort.setVisible(true);
-	},
-	
-	mouseLeaved: function() {
-		this.northPort.setVisible(false);
-		this.southPort.setVisible(false);
-		this.eastPort.setVisible(false);
-		this.westPort.setVisible(false);
-	},
-	
 	removeAllConnections: function() {
 		for (var i = 0; i < this.connectors.getSize(); i++) {
 			var c = this.connectors.get(i);
@@ -215,25 +201,24 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		for (var i = 0; i < this.connectors.getSize(); i++) {
 			var connector = this.connectors.get(i);
 			if (connector.getId() == connectorId) {
-				this.removeFigure(connector);
-				
-				this.connectors.remove(connector);
-				
-				this.connectorsN.remove(connector);
-				this.connectorsS.remove(connector);
-				this.connectorsW.remove(connector);
-				this.connectorsE.remove(connector);
-				break;
+				if (connector.getConnections().getSize() == 0) { // seulement si il n'y plus de connection
+					this.removeFigure(connector); // on supprime le connecteur du canvas
+					this.connectors.remove(connector); // on supprime le connecteur de la liste interne de Draw2DItem
+					return true;
+					// connector.removePort(connector.getPorts().get(0)); // on supprime les connections de ce connecteur sur le canvas
+					// mettre à jour les connections et draw2DConnections liste
+					// TODO ...
+					/*
+					this.connectorsN.remove(connector);
+					this.connectorsS.remove(connector);
+					this.connectorsW.remove(connector);
+					this.connectorsE.remove(connector);
+					*/
+				}
+				//break;
 			}
 		}
-	},
-	
-	onMouseEnter: function() {
-		// this.mouseEntered();
-	},
-	
-	onMouseLeave: function() {
-		// this.mouseLeaved();
+		return false;
 	},
 	
 	getText: function() {
@@ -254,6 +239,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 					callback: function(key, options) {
 						switch(key) {
 							case "delete":
+								deleteItem(currentItem, canvas, items, connections, draw2DConnections, true);
+								return;
 								console.log("delete");
 								var documentsToDeleted = new draw2d.util.ArrayList();
 								itemId = currentItem.getId();

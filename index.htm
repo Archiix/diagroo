@@ -500,6 +500,8 @@
 			/* var */ // nextDraw2DConnections = new draw2d.util.ArrayList();
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
 			
+			canvas.installEditPolicy(new draw2d.policy.canvas.CoronaDecorationPolicy());
+			
 			itemIsExists = function(item) {
 				for (var i = 0; i < items.getSize(); i++) {
 					var currentItem = items.get(i);
@@ -566,18 +568,24 @@
 			
 			var policy = new draw2d.policy.canvas.CanvasPolicy();
 			var tempFigure = null;
+			
+			/* pour le mode multiconnection */
+			var multipleConnectionMode = false;
+			var srcConnector = null;
+			var dstConnector = null;
+			var xSrc = 0;
+			var ySrc = 0;
+			var line = new draw2d.shape.basic.Line(0, 0, 0, 0);
+			var srcCircle = new draw2d.shape.basic.Circle(12);
+			srcCircle.setStroke(0);
+			srcCircle.setBackgroundColor("#000");
+			var dstCircle = new draw2d.shape.basic.Circle(12);
+			dstCircle.setStroke(0);
+			dstCircle.setBackgroundColor("#000");
+			/* fin */
+			
 			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
 				figure = canvas.getBestFigure(x, y);
-				if (figure != null && (figure instanceof Draw2DItem || figure.getParent())) {
-					if (!figure.getParent()) {
-						figure.mouseEntered();
-						tempFigure = figure;
-					}
-				} else {
-					for (var i = 0; i < items.getSize(); i++) {
-						items.get(i).mouseLeaved();
-					}
-				}
 				// déplacement d'un connecteur
 				if (figure != null && figure instanceof Draw2DConnector && ctrlKey) {
 					var parent = figure.getParent();
@@ -612,6 +620,57 @@
 							break;
 					}
 					figure.getParent().repaint();
+				}
+				// multiple connection mode
+				if (figure != null && figure instanceof Draw2DConnector && shiftKey && !multipleConnectionMode) {
+					multipleConnectionMode = true;
+					xSrc = figure.getAbsoluteX() + (figure.getWidth() / 2);
+					ySrc = figure.getAbsoluteY() + (figure.getHeight() / 2);
+					srcConnector = figure;
+				}
+				if (multipleConnectionMode) {
+					line.setStartPoint(xSrc, ySrc);
+					line.setEndPoint(x, y);
+					srcCircle.setCenter(xSrc, ySrc);
+					dstCircle.setCenter(x, y);
+					if (!line.getCanvas()) {
+						canvas.addFigure(line);
+						canvas.addFigure(srcCircle);
+						canvas.addFigure(dstCircle);
+					}
+				}
+				if (multipleConnectionMode && !shiftKey) {
+					multipleConnectionMode = false;
+					canvas.removeFigure(line);
+					canvas.removeFigure(srcCircle);
+					canvas.removeFigure(dstCircle);
+					dstConnector = canvas.getBestFigure(x, y);
+					if (dstConnector instanceof Draw2DConnector) {
+						if (srcConnector.type === dstConnector.type) {
+							console.log("New connection can't be create.");
+						}
+						var srcPort = null;
+						var dstPort = null;
+						switch (srcConnector.type) {
+							case 'output':
+								srcPort = srcConnector.getPorts().get(0);
+								dstPort = dstConnector.getPorts().get(0);
+								break;
+							case 'input':
+								srcPort = dstConnector.getPorts().get(0);
+								dstPort = srcConnector.getPorts().get(0);
+								break;
+						}
+						var c = new Draw2DConnection();
+						c.setSource(srcPort);
+						c.setTarget(dstPort);
+						c.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
+						canvas.addFigure(c);
+						var layerId = $("#layersSelect option:selected").val(); // get the current layer selected by the user
+						var newConnection = new Connection(c.getId(), dstConnector.getId(), srcConnector.getId(), layerId, c.getText());
+						connections.add(newConnection);
+						draw2DConnections.add(c);
+					}
 				}
 			};
 			policy.onMouseUp = function(figure, x, y, shiftKey, ctrlKey) {
@@ -797,6 +856,7 @@
 		<script type="text/javascript" src="src/javascript/ContextMenuItemGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/SaveUpdateViewGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/LoadViewGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/DeleteItemGUI.js"></script>
 	</head>
 	<body>
 		<div id="nav" style="margin: 10px">
@@ -804,9 +864,11 @@
 			<select id="modelsSelect" multiple="multiple">
 				<option value="">No Models</option>
 			</select>
+			<!--
 			<select id="itemsSelect" multiple="multiple">
 				<option value="">No Items</option>
 			</select>
+			-->
 			<select id="viewsSelect" multiple="multiple">
 				<option value="">No Views</option>
 			</select>
@@ -814,18 +876,27 @@
 				<option value="">No Layers</option>
 			</select>
 			<hr />
-			<button id="newItemButton">New Item</button>
-			<button id="newModelButton">New Model</button>
+			<button id="newItemButton" class="btn btn-primary">New Item</button>
+			<button id="newModelButton" class="btn btn-primary">New Model</button>
 			<input type="text" id="modelNameInput" value="model name" />
-			<button id="newLayerButton">New Layer</button>
+			<button id="newLayerButton" class="btn btn-primary">New Layer</button>
 			<input type="text" id="layerNameInput" value="layer name" />
-			<button id="newViewButton">New View</button>
+			<button id="newViewButton" class="btn btn-primary">New View</button>
 			<input type="text" id="viewNameInput" value="view name" />
-			<button id="saveModelButton">Save/Update Model</button>
-			<button id="saveViewButton">Save/Update View</button>
-			<button id="clearButton">Clear</button>
-			<button id="resetButton">Reset</button>
+			<button id="saveModelButton" class="btn btn-primary">Save/Update Model</button>
+			<button id="saveViewButton" class="btn btn-primary">Save/Update View</button>
+			<button id="clearButton" class="btn btn-primary">Clear</button>
+			<button id="resetButton" class="btn btn-primary">Reset</button>
 		</div>
-		<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 600px"></div>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-1" style="padding: 0 10px 0 10px">
+					<select id="itemsSelect" multiple="multiple" style="width: 100%; height: 600px">
+						<option value="">No Items</option>
+					</select>
+				</div>
+				<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 600px; padding: 0" class="col-md-11"></div>
+			</div>
+		</div>
 	</body>
 </html>
