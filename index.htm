@@ -648,6 +648,7 @@
 					if (dstConnector instanceof Draw2DConnector) {
 						if (srcConnector.type === dstConnector.type) {
 							console.log("New connection can't be create.");
+							return; // on ne créer pas la connection
 						}
 						var srcPort = null;
 						var dstPort = null;
@@ -857,6 +858,8 @@
 		<script type="text/javascript" src="src/javascript/SaveUpdateViewGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/LoadViewGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/DeleteItemGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/DeleteConnectorGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/DeleteConnectionGUI.js"></script>
 	</head>
 	<body>
 		<div id="nav" style="margin: 10px">

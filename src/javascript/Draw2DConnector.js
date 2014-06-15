@@ -60,6 +60,7 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 	},
 	
 	onContextMenu: function(x, y) {
+		var currentConnector = this;
 		$.contextMenu({
 			selector: 'body',
 			events: {
@@ -69,14 +70,8 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 			},
 			callback: $.proxy(function(key, options) {
 				switch(key) {
-					case "createInputPort":
-						this.createPort(0);
-						break;
-					case "createOutputPort":
-						this.createPort(1);
-						break;
 					case "delete":
-						this.getCanvas().removeFigure(this);
+						deleteConnector(currentConnector, currentConnector.getParent(), canvas, connections, draw2DConnections, true);
 						break;
 					default:
 						break;
@@ -85,9 +80,6 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 			x: x,
 			y: y,
 			items: {
-				"createInputPort": {name: "Create Input Port", icon: ""},
-				"createOutputPort": {name: "Create Output Port", icon: ""},
-				"sep1": "---------",
 				"delete": {name: "Delete", icon: ""}
 			}
 		});

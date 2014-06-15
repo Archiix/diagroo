@@ -35,6 +35,32 @@ var Draw2DConnection = draw2d.Connection.extend({
 		console.log("[Draw2DConnection.js] Draw2DConnection ID = " + this.getId());
 	},
 	
+	onContextMenu: function(x, y) {
+		currentConnection = this;
+		$.contextMenu({
+			selector: 'body',
+			events: {
+				hide: function() {
+					$.contextMenu('destroy');
+				}
+			},
+			callback: $.proxy(function(key, options) {
+				switch(key) {
+					case "delete":
+						deleteConnection(currentConnection, canvas, connections, draw2DConnections, true);
+						break;
+					default:
+						break;
+				}
+			}, this),
+			x: x,
+			y: y,
+			items: {
+				"delete": {name: "Delete", icon: ""}
+			}
+		});
+	},
+	
 	setLayerStyle: function() {
 		this.setAlpha(0.1);
 		this.label.setAlpha(0.5);
