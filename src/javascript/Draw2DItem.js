@@ -239,7 +239,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 					callback: function(key, options) {
 						switch(key) {
 							case "delete":
-								deleteItem(currentItem, canvas, items, connections, draw2DConnections, true);
+								var result = confirm("Delete on the data base ?");
+								deleteItem(currentItem, canvas, items, connections, draw2DConnections, result);
 								break;
 						}
 					},

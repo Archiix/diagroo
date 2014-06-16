@@ -3,7 +3,8 @@ var Draw2DConnection = draw2d.Connection.extend({
     init:function()
     {
 		this._super();
-		this.setRouter(new draw2d.layout.connection.InteractiveManhattanConnectionRouter());
+		// this.setRouter(new draw2d.layout.connection.InteractiveManhattanConnectionRouter());
+		this.setRouter(new draw2d.layout.connection.SplineConnectionRouter());
 	  
 	  // Set connection style
 	  /*
@@ -47,7 +48,8 @@ var Draw2DConnection = draw2d.Connection.extend({
 			callback: $.proxy(function(key, options) {
 				switch(key) {
 					case "delete":
-						deleteConnection(currentConnection, canvas, connections, draw2DConnections, true);
+						var result = confirm("Delete on the data base ?");
+						deleteConnection(currentConnection, canvas, connections, draw2DConnections, result);
 						break;
 					default:
 						break;

@@ -71,7 +71,8 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 			callback: $.proxy(function(key, options) {
 				switch(key) {
 					case "delete":
-						deleteConnector(currentConnector, currentConnector.getParent(), canvas, connections, draw2DConnections, true);
+						var result = confirm("Delete on the data base ?");
+						deleteConnector(currentConnector, currentConnector.getParent(), canvas, connections, draw2DConnections, result);
 						break;
 					default:
 						break;

@@ -30,49 +30,51 @@ function deleteConnector(connector, item, canvas, connections, draw2DConnections
 			documentsToDelete.push(draw2DConnectionId);
 		}
 	}
-	// on récupère les autres connections sur la base de données
-	switch (connector.type) {
-		case "output":
-			var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows;
-				for (var j = 0; j < allConnections.length; j++) {
-				var connection = allConnections[j].value;
-				documentsToDelete.push(connection._id);
-				var otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
-				otherConnectorsToDelete.push(otherConnector._id + ";" + otherConnector.portType);
-			}
-			break;
-		case "input":
-			var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows;
-			for (var j = 0; j < allConnections.length; j++) {
-				var connection = allConnections[j].value;
-				documentsToDelete.push(connection._id);
-				var otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
-				otherConnectorsToDelete.push(otherConnector._id + ";" + otherConnector.portType);
-			}
-			break;
-	}
-	var documentsToDelete = documentsToDelete.filter(function(value, index, self) { return self.indexOf(value) === index; }); // permet les id "doublons" dans un tableau
-	for (var i = 0; i < documentsToDelete.length; i++) {
-		deleteDocument(documentsToDelete[i]);
-	}
-	// suppression des "other" connectors [otherConnectorsToDelete]
-	for (var i = 0; i < otherConnectorsToDelete.length; i++) {
-		var params = otherConnectorsToDelete[i].split(";"); // params[0] => connector id, params[1] => connector type
-		var connectorId = params[0];
-		var connectorType = params[1];
-		switch (connectorType) {
+	if (deleteOnDatabase) {
+		// on récupère les autres connections sur la base de données
+		switch (connector.type) {
 			case "output":
-				var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
-				if (allConnections.length == 0) {
-					deleteDocument(connectorId);
+				var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows;
+					for (var j = 0; j < allConnections.length; j++) {
+					var connection = allConnections[j].value;
+					documentsToDelete.push(connection._id);
+					var otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
+					otherConnectorsToDelete.push(otherConnector._id + ";" + otherConnector.portType);
 				}
 				break;
 			case "input":
-				var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
-				if (allConnections.length == 0) {
-					deleteDocument(connectorId);
+				var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows;
+				for (var j = 0; j < allConnections.length; j++) {
+					var connection = allConnections[j].value;
+					documentsToDelete.push(connection._id);
+					var otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+					otherConnectorsToDelete.push(otherConnector._id + ";" + otherConnector.portType);
 				}
 				break;
+		}
+		var documentsToDelete = documentsToDelete.filter(function(value, index, self) { return self.indexOf(value) === index; }); // permet les id "doublons" dans un tableau
+		for (var i = 0; i < documentsToDelete.length; i++) {
+			deleteDocument(documentsToDelete[i]);
+		}
+		// suppression des "other" connectors [otherConnectorsToDelete]
+		for (var i = 0; i < otherConnectorsToDelete.length; i++) {
+			var params = otherConnectorsToDelete[i].split(";"); // params[0] => connector id, params[1] => connector type
+			var connectorId = params[0];
+			var connectorType = params[1];
+			switch (connectorType) {
+				case "output":
+					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
+					if (allConnections.length == 0) {
+						deleteDocument(connectorId);
+					}
+					break;
+				case "input":
+					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
+					if (allConnections.length == 0) {
+						deleteDocument(connectorId);
+					}
+					break;
+			}
 		}
 	}
 }
