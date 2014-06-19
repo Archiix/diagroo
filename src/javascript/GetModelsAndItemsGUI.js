@@ -48,11 +48,14 @@ function getLayers(modelId, layersSelectHTML) {
 			var layersList = data.rows;
 			if (layersList.length == 0) {
 				layersSelectHTML.append('<option value="">No Layers</option>');
-			}
-			for (var i = 0; i < layersList.length; i++) {
-				var id = layersList[i].id;
-				var text = layersList[i].value;
-				layersSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+			} else {
+				// trier la liste
+				layersList = layersList.sort(function(a, b) { return a.value.index - b.value.index; } );
+				for (var i = 0; i < layersList.length; i++) {
+					var id = layersList[i].id;
+					var text = layersList[i].value.name + ' - ' + layersList[i].value.index;
+					layersSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+				}
 			}
 		},
 		error: function(status) {

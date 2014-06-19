@@ -91,10 +91,29 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 	for (var i = 0; i < connections.getSize(); i++) {
 		var currentConnection = connections.get(i);
 		console.log(currentConnection._id);
+		/* search draw2DConnection */
+		var currentDraw2DConnection = null;
+		for (var j = 0; j < draw2DConnections.getSize(); j++) {
+			currentDraw2DConnection = draw2DConnections.get(i);
+			if (currentDraw2DConnection.getId() == currentConnection._id) {
+				break; // on sort de la boucle
+			}
+		}
+		console.assert(currentConnection._id === currentDraw2DConnection.getId()); // il faut que les deux correspondent
+		/* ended */
 		var connectionView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionView', {'key': '["'+layerId+'","'+viewId+'","'+currentConnection._id+'"]'}).responseText);
 		if (connectionView.rows.length == 0) {
 			// layerId, vertices, connectionId
-			var newConnectionView = new ConnectionView(layerId, viewId, [], currentConnection._id);
+			// var newConnectionView = new ConnectionView(layerId, viewId, [], currentConnection._id);
+			var points = new Array();
+			var verticies = currentDraw2DConnection.getVertices();
+			for (var j = 0; j < verticies.getSize(); j++) {
+				var vertice = verticies.get(j);
+				console.log(vertice);
+				points.push({"x": vertice.getX(), "y": vertice.getY()});
+			}
+			console.log(points.length);
+			var newConnectionView = new ConnectionView(layerId, viewId, points, currentConnection._id);
 			
 			couchDBJQuery.couch.db("diagroo").saveDoc(newConnectionView, {
 				success: function(data) {
@@ -107,6 +126,16 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 			console.log("mise à jours des connections");
 			var connectionViewToUpdate = connectionView.rows[0].value;
 			console.log(connectionViewToUpdate);
+			// mettre à jour les vertices
+			var points = new Array();
+			var verticies = currentDraw2DConnection.getVertices();
+			for (var j = 0; j < verticies.getSize(); j++) {
+				var vertice = verticies.get(j);
+				console.log(vertice);
+				points.push({"x": vertice.getX(), "y": vertice.getY()});
+			}
+			connectionViewToUpdate.vertices = points;
+			console.log(points.length);
 			couchDBJQuery.couch.db("diagroo").saveDoc(connectionViewToUpdate, {
 				success: function(data) {
 				},

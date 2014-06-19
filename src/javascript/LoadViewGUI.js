@@ -57,15 +57,18 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		var connectionModel = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connectionId).responseText);
 		var inputConnectorId = connectionModel.inputConnectorId;
 		var outputConnectorId = connectionModel.outputConnectorId;
+		console.log(connectionModel);
 		// get two connectors
 		// Draw2DItem::searchConnectorById(connectorId)
 		var outputConnector = searchDraw2DConnectorById(items, outputConnectorId);
 		var inputConnector = searchDraw2DConnectorById(items, inputConnectorId);
 		
+		/*
 		console.log(inputConnectorId);
 		console.log(outputConnectorId);
 		console.log(outputConnector);
 		console.log(inputConnector);
+		*/
 		
 		// create the connection (graphic)
 		if (outputConnector.getPorts().getSize() == 0) {
@@ -80,6 +83,11 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		newDraw2DConnection.setSource(outputConnector.getOutputPort(0));
 		newDraw2DConnection.setTarget(inputConnector.getInputPort(0));
 		newDraw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
+		var vertices = new draw2d.util.ArrayList();
+		for (var j = 0; j < currentConnectionView.vertices.length; j++) {
+			var vertice = currentConnectionView.vertices[j];
+			vertices.add(new draw2d.geo.Point(vertice.x, vertice.y));
+		}
 		// id, inputConnectorId, outputConnectorId
 		connections.add(new Connection(connectionId, inputConnectorId, outputConnectorId));
 		draw2DConnections.add(newDraw2DConnection);
@@ -87,6 +95,10 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		
 		outputConnector.repaint();
 		inputConnector.repaint();
+		console.log(newDraw2DConnection.getVertices());
+		// console.log(vertices);
+		newDraw2DConnection.setVertices(vertices).repaint();
+		console.log(newDraw2DConnection.getVertices());
 	}
 }
 

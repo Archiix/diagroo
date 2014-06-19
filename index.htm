@@ -482,10 +482,20 @@
 				}
 			}
 			$("#nav").append(errorsArea);
-			
 			window.setTimeout(destroyErrorMessages, 5000);
-			
 			return !(nbErrors > 0);
+		}
+		function displayErrorMessage(errorMessage) {
+			var errorsArea = $('<div>', {
+				id: 'errors'
+			});
+			errorsArea.append('<div><span class="label label-warning">WARNING: ' + errorMessage + '</span></div>');
+			$("#nav").append(errorsArea);
+			window.setTimeout(destroyErrorMessages, 5000);
+		}
+		
+		function moveListener() {
+			console.log();
 		}
 		
 		$(window).load(function() {
@@ -500,7 +510,12 @@
 			/* var */ // nextDraw2DConnections = new draw2d.util.ArrayList();
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
 			
+			var nextLayerItems = new draw2d.util.ArrayList();
+			var nextLayerConnections = new draw2d.util.ArrayList();
+			var nextLayerDraw2DConnections = new draw2d.util.ArrayList();
+			
 			canvas.installEditPolicy(new draw2d.policy.canvas.CoronaDecorationPolicy());
+			canvas.installEditPolicy(new draw2d.policy.canvas.SnapToGridEditPolicy());
 			
 			itemIsExists = function(item) {
 				for (var i = 0; i < items.getSize(); i++) {
@@ -546,6 +561,9 @@
 				}
 			};
 			
+			/* var */ layerMode = false; // variable globale
+			
+			/* faire mieux ... */
 			var clearCanvas = function() {
 				for (var i = 0; i < items.getSize(); i++) {
 					items.get(i).removeAllConnections();
@@ -555,15 +573,18 @@
 				connections = new draw2d.util.ArrayList();
 				draw2DConnections = new draw2d.util.ArrayList();
 				
-				/*
-				for (var i = 0; i < nextItems.getSize(); i++) {
-					nextItems.get(i).removeAllConnections();
-					canvas.removeFigure(nextItems.get(i));
+				for (var i = 0; i < nextLayerItems.getSize(); i++) {
+					nextLayerItems.get(i).removeAllConnections();
+					canvas.removeFigure(nextLayerItems.get(i));
 				}
-				nextItems = new draw2d.util.ArrayList();
-				nextConnections = new draw2d.util.ArrayList();
-				nextDraw2DConnections = new draw2d.util.ArrayList();
-				*/
+				nextLayerItems = new draw2d.util.ArrayList();
+				nextLayerConnections = new draw2d.util.ArrayList();
+				nextLayerDraw2DConnections = new draw2d.util.ArrayList();
+				
+				canvas.uninstallEditPolicy(new draw2d.policy.canvas.DecorationPolicy());
+				canvas.installEditPolicy(new draw2d.policy.canvas.CoronaDecorationPolicy());
+				
+				layerMode = false;
 			};
 			
 			var policy = new draw2d.policy.canvas.CanvasPolicy();
@@ -674,16 +695,34 @@
 					}
 				}
 			};
-			policy.onMouseUp = function(figure, x, y, shiftKey, ctrlKey) {
+			var oldX = 0.0;
+			var oldY = 0.0;
+			policy.onMouseDown = function(c, x, y, shiftKey, ctrlKey) {
 				var bestFigure = canvas.getBestFigure(x, y);
-				if (bestFigure != null && bestFigure instanceof Draw2DItem) {
-					console.log("[index.htm] onMouseUp, Draw2DItem::getText() = " + bestFigure.getText());
+				oldX = bestFigure.getX();
+				oldY = bestFigure.getY();
+			};
+			policy.onMouseUp = function(c, x, y, shiftKey, ctrlKey) {
+				$.ajaxSetup({async:false});
+				var bestFigure = canvas.getBestFigure(x, y);
+				if (layerMode && bestFigure != null && bestFigure instanceof Draw2DItem) {
+					var upperLayerItem = bestFigure.upperLayerItem;
+					if (upperLayerItem != null) {
+						var oldFigure = canvas.getBestFigure(oldX, oldY); // Attention si différent de null !
+						console.log("UpperLayerItem ID = " + upperLayerItem.getId());
+						console.log("CurrentItem ID = " + bestFigure.getId());
+					} else {
+						// var currentItem = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + bestFigure.getId()).responseText);
+						var oldFigure = canvas.getBestFigure(oldX, oldY);
+						if (oldFigure != null) {
+							console.log("vider la liste de = " + oldFigure.getId() + " comme valeu de = " + bestFigure.getId());
+						}
+					}
 				}
 			};
 			canvas.installEditPolicy(policy);
 			/* end globals variables declaration */
 			
-			var layerMode = false;
 			var prevView = "";
 			
 			// Load all models
@@ -715,36 +754,48 @@
 			});
 			/* layersSelect double click event */
 			$("#layersSelect").dblclick(function() {
+				$.ajaxSetup({async:false});
 				clearCanvas();
 				
+				var modelId = $("#modelsSelect option:selected").val();
 				var layerId = $("#layersSelect option:selected").val();
 				var viewId = $("#viewsSelect option:selected").val();
 				
-				if (!displayErrorMessages([layerId, viewId], ['layer id', 'view id'])) {
+				if (!displayErrorMessages([modelId, layerId, viewId], ['model id', 'layer id', 'view id'])) {
 					return;
 				}
 				
 				if (layerId == prevView) {
 					layerMode = true;
 					prevView = "";
+					canvas.uninstallEditPolicy(new draw2d.policy.canvas.CoronaDecorationPolicy());
+					canvas.installEditPolicy(new draw2d.policy.canvas.DecorationPolicy());
 				} else {
 					layerMode = false;
 					prevView = layerId;
+					canvas.uninstallEditPolicy(new draw2d.policy.canvas.DecorationPolicy());
+					canvas.installEditPolicy(new draw2d.policy.canvas.CoronaDecorationPolicy());
 				}
 				
 				switch (layerMode) {
 					case true:
 							loadView(layerId, viewId, items, connections, draw2DConnections, canvas);
-							
+							var currentLayer = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + layerId).responseText);
+							var nextLayerIndex = currentLayer.index + 1;
+							var nextLayers = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/layer/_view/getLayerByIndex', {'key': '["'+modelId+'",'+nextLayerIndex+']'}).responseText).rows;
 							for (var i = 0; i < items.getSize(); i++) {
 								items.get(i).setLayerStyle();
 							}
 							for (var i = 0; i < draw2DConnections.getSize(); i++) {
 								draw2DConnections.get(i).setLayerStyle();
 							}
-							
-							// afficher la couche du dessus !
-							// TODO ...
+							if (nextLayers.length != 0) {
+								console.log(nextLayers);
+								var nextLayer = nextLayers[0].value;
+								loadView(nextLayer._id, viewId, nextLayerItems, nextLayerConnections, nextLayerDraw2DConnections, canvas);
+							} else {
+								displayErrorMessage("There is no lower layer");
+							}
 						break;
 					case false:
 						loadView(layerId, viewId, items, connections, draw2DConnections, canvas);

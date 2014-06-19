@@ -6,4 +6,6 @@ function Item(id, modelId, layerId, text) {
 	this.modelId = modelId;
 	this.layerId = layerId;
 	this.text = text;
+	
+	this.children = [];
 }

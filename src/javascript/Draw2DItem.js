@@ -37,7 +37,8 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.setMinWidth(this.minWidth);
 		this.setMinHeight(this.minHeight);
 		
-		this.setResizeable(false);
+		// this.setResizeable(false);
+		this.setDeleteable(false);
 		
 		var currentItem = this;
 		
@@ -72,19 +73,71 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.addPort(this.eastPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() - 10, this.getHeight() / 2));
 		
 		this.tooltip = null;
+		
+		this.attachMoveListener(this);
+		this.attachResizeListener(this);
+		
+		this.upperLayerItem = null;
+	},
+	
+	setRedBorder: function() {
+		this.setAlpha(0.5);
+		this.setColor("#f00");
+	},
+	
+	clearBorder: function() {
+		this.setAlpha(0.2);
+		this.setColor("#000");
+	},
+	
+	/* awesome */
+	onOtherFigureIsMoving:function(figure) {
+		// console.log(figure.getText());
+		this.upperLayerItem = null;
+		if (layerMode) { // chercher dans items => List of Draw2DItem
+			for (var i = 0; i < items.getSize(); i++) {
+				var currentItem = items.get(i);
+				currentItem.clearBorder();
+			}
+			for (var i = 0; i < items.getSize(); i++) {
+				var currentItem = items.get(i);
+				var x1 = currentItem.getAbsoluteX();
+				var y1 = currentItem.getAbsoluteY();
+				var x2 = this.getAbsoluteX();
+				var y2 = this.getAbsoluteY();
+				var w1 = currentItem.getWidth();
+				var h1 = currentItem.getHeight();
+				if (x2 >= x1 && (x2 <= (x1 + w1)) && y2 >= y1 && (y2 <= (y1 + h1))) {
+					this.upperLayerItem = currentItem;
+					currentItem.setRedBorder();
+					break;
+				}
+			}
+		}
+	},
+	
+	onOtherFigureIsResizing: function(figure) {
+		console.log(figure.getText());
 	},
 	
 	setLayerStyle: function() {
 		console.log("[Draw2DItem] setLayerStyle");
-		this.setAlpha(0.5);
-		this.label.setAlpha(0.5);
+		var alpha = 0.1;
+		this.setAlpha(alpha);
+		this.label.setAlpha(alpha);
 		for (var i = 0; i < this.connectors.getSize(); i++) {
-			this.connectors.get(i).setAlpha(0.5);
+			this.connectors.get(i).setAlpha(alpha);
 		}
+		/*
 		this.northPort.setAlpha(0.5);
 		this.southPort.setAlpha(0.5);
 		this.westPort.setAlpha(0.5);
 		this.eastPort.setAlpha(0.5);
+		*/
+		this.northPort.setVisible(false);
+		this.southPort.setVisible(false);
+		this.westPort.setVisible(false);
+		this.eastPort.setVisible(false);
 		this.setDraggable(false);
 	},
 	
@@ -112,7 +165,7 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	searchConnectorById: function(connectorId) {
 		for (var i = 0; i < this.connectors.getSize(); i++) {
 			var connector = this.connectors.get(i);
-			console.log("[searchConnectorById] " + connector.getId());
+			// console.log("[searchConnectorById] " + connector.getId());
 			if (connector.getId() == connectorId) {
 				return connector;
 			}
