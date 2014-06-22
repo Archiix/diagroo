@@ -38,3 +38,16 @@ body {
  filter: progid:DXImageTransform.Microsoft.Shadow(Strength=4, Direction=135, Color='#000000');
 }
 */
+
+#area {
+	display: none;
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 0px;
+	height: 0px;
+	background-color: #eee;
+}
+
+#area canvas {
+}

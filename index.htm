@@ -448,6 +448,9 @@
 		<script type="text/javascript" src="src/javascript/ConnectorView.js"></script>
 		<script type="text/javascript" src="src/javascript/ConnectionView.js"></script>
 		
+		<!-- Processing JS -->
+		<script type="text/javascript" src="processingjs/processing.min.js"></script>
+		
 		<script type="text/javascript">
 		function destroyErrorMessages() {
 			$("#errors").remove();
@@ -900,6 +903,33 @@
 					}
 				});
 			});
+			$("#to3DButton").click(function() {
+				var documentWidth = $(document).width();
+				var documentHeight = $(document).height();
+				console.log("Document width = " + documentWidth);
+				console.log("Document height = " + documentHeight);
+				var area = $("#area");
+				var canvas = $("#area canvas");
+				area.css('display', 'block');
+				var w = documentWidth - 200;
+				var h = documentHeight - 200;
+				var left = 100;
+				var top = 100;
+				area.css('width', w);
+				area.css('height', h);
+				area.css('left', left);
+				area.css('top', top);
+				canvas.css('width', w);
+				canvas.css('height', h - 40);
+				
+				startSketch();
+			});
+			$("#closeButton").click(function() {
+				stopSketch();
+				
+				var area = $("#area");
+				area.css('display', 'none');
+			});
 		});
 		</script>
 		<!-- GUI + CouchDB calls -->
@@ -941,6 +971,7 @@
 			<button id="saveViewButton" class="btn btn-primary">Save/Update View</button>
 			<button id="clearButton" class="btn btn-primary">Clear</button>
 			<button id="resetButton" class="btn btn-primary">Reset</button>
+			<button id="to3DButton" class="btn btn-default">To 3D</button>
 		</div>
 		<div class="container-fluid">
 			<div class="row">
@@ -952,5 +983,30 @@
 				<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 600px; padding: 0" class="col-md-11"></div>
 			</div>
 		</div>
+		<div id="area">
+			<canvas id="sketch" data-processing-sources="controlling.pde"></canvas>
+			<button id="closeButton" class="btn btn-default">Close</button>
+		</div>
+		<script type="application/javascript">
+		// 3D with Process JS
+		var processingInstance;
+		function startSketch() {
+			switchSketchState(true);
+		}
+		function stopSketch() {
+			switchSketchState(false);
+		}
+		function switchSketchState(on) {
+			if (!processingInstance) {
+				processingInstance = Processing.getInstanceById('sketch');
+			}
+			if (on) {
+				processingInstance.loop();  // call Processing loop() function
+			} else {
+				processingInstance.noLoop(); // stop animation, call noLoop()
+			}
+		}
+		// 3D with Processing JS ended
+		</script>
 	</body>
 </html>
