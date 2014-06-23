@@ -920,7 +920,7 @@
 				area.css('left', left);
 				area.css('top', top);
 				canvas.css('width', w);
-				canvas.css('height', h - 40);
+				canvas.css('height', h);
 				
 				startSketch();
 			});
@@ -1001,6 +1001,13 @@
 				processingInstance = Processing.getInstanceById('sketch');
 			}
 			if (on) {
+				// int xPos, int yPos, int zPos, boolean state, color col
+				var blocs = processingInstance.getBlocs();
+				blocs.add(new processingInstance.Led(1, 1, -1, true, 120));
+				blocs.add(new processingInstance.Led(2, 1, -1, true, 120));
+				blocs.add(new processingInstance.Led(1, 2, -1, true, 120));
+				blocs.add(new processingInstance.Led(2, 2, -1, true, 120));
+				
 				processingInstance.loop();  // call Processing loop() function
 			} else {
 				processingInstance.noLoop(); // stop animation, call noLoop()

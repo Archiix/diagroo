@@ -1,6 +1,10 @@
 // http://codelab.fr/4104
 
-Led[] ledCube = new Led[64];
+ArrayList blocs = new ArrayList();
+
+ArrayList getBlocs() { return blocs; }
+
+Led[] ledCube = new Led[125];
 
 int cubeSize = 150;
 
@@ -30,9 +34,9 @@ float rho = 300;   //distance from cam to point of view
 
 void setup(){
     int c = 0;
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      for (int k = 0; k < 4; k++) {
+  for (int i = -2; i < 3; i++) {
+    for (int j = -2; j < 3; j++) {
+      for (int k = -2; k < 3; k++) {
         ledCube[c] = new Led(j, -i, -k, false, 120);
         c++;
       }
@@ -44,14 +48,22 @@ void setup(){
 void draw(){
   background(0);
   pointLight(150,255,255,200,200,200);
-  noLights();
+  // noLights();
+  lights();
   noStroke();
   noSmooth();
   fill(160);
-  drawAxis();
+  // drawAxis();
   updateCamPosition();
   camera(camEyeX,camEyeY,camEyeZ,viewX,viewY,viewZ,camUpX,camUpY,camUpZ);
-  drawCube();
+  // drawCube();
+  drawAxis();
+  translate(0.0, 0.0, 0.0);
+  // box(50);
+  for (int i = 0; i < blocs.size(); i++) {
+    Led led = (Led)blocs.get(i);
+    led.display();
+  }
 }
 
 class Led {
@@ -72,29 +84,31 @@ class Led {
     pushMatrix();
     translate(x * (cubeSize / 3), y * (cubeSize / 3), z * (cubeSize / 3));
     fill(bColor);
-    box(3);
+    box(30);
     popMatrix();
   }
 }
 
 void drawAxis(){
   stroke(0,255,0);
-  line(0,0,0,100,0,0);
+  line(0,0,0,200,0,0);
   stroke(0,0,255);
-  line(0,0,0,0,100,0);
+  line(0,0,0,0,200,0);
   stroke(255,0,0);
-  line(0,0,0,0,0,-100);
+  line(0,0,0,0,0,-200);
   noStroke();
 }
 
 void drawCube() {
-   for (int i = 0; i < 64; i++) {
+   for (int i = 0; i < 125; i++) {
+   /*
     switch (i) {
      case 0 : ledCube[i].bColor = color(255,255,255); break;
      case 12 : ledCube[i].bColor = color(255,0,0); break;
      case 48 : ledCube[i].bColor = color(0,255,0); break;
      case 60 : ledCube[i].bColor = color(0,0,255); break;
     }
+	*/
     ledCube[i].display();
   } 
 }

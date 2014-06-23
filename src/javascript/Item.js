@@ -7,5 +7,5 @@ function Item(id, modelId, layerId, text) {
 	this.layerId = layerId;
 	this.text = text;
 	
-	this.children = [];
+	this.children = []; // liste d'ID d'autres Items
 }

@@ -46,7 +46,12 @@ body {
 	top: 0px;
 	width: 0px;
 	height: 0px;
-	background-color: #eee;
+}
+
+#closeButton {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
 }
 
 #area canvas {
