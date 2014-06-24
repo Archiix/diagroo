@@ -1,15 +1,14 @@
-// http://codelab.fr/4104
-
-ArrayList blocs = new ArrayList();
-
-ArrayList getBlocs() { return blocs; }
-
-Led[] ledCube = new Led[125];
+// fill from index.htm
+ArrayList layers = new ArrayList();
+ArrayList getLayers() { return layers; }
 
 int cubeSize = 150;
 
-int wWidth = 1680;
-int wHeight = 882;
+int wWidth = 1483;
+int wHeight = 733;
+
+void setWidth(int width) { wWidth = width; }
+void setHeight(int height) { wHeight = height; }
 
 //center
 //int cx = wWidth/2;
@@ -32,20 +31,84 @@ float theta = 90;
 float phi = 0;       
 float rho = 300;   //distance from cam to point of view
 
-void setup(){
-    int c = 0;
-  for (int i = -2; i < 3; i++) {
-    for (int j = -2; j < 3; j++) {
-      for (int k = -2; k < 3; k++) {
-        ledCube[c] = new Led(j, -i, -k, false, 120);
-        c++;
-      }
-    }
+// ***********
+// Class Layer
+// ***********
+class Layer {
+  ArrayList _items;
+  ArrayList _connections;
+  
+  Layer() {
+    _items = new ArrayList();
+	_connections = new ArrayList();
   }
+  
+  ArrayList getItems() { return _items; }
+  ArrayList getConnections() { return _connections; }
+}
+
+// **********
+// Class Item
+// **********
+class Item {
+  float _x;
+  float _y;
+  String _text;
+  
+  Item(float x, float y, String text) {
+    _x = x;
+	_y = y;
+	_text = text;
+  }
+  
+  float getX() { return _x; }
+  float getY() { return _y; }
+  String getText() { return _text; }
+}
+
+// ****************
+// Class Connection
+// ****************
+class Connection {
+  ArrayList _pos;
+  String _text;
+  String _outputConnectorText;
+  String _inputConnectorText;
+  
+  Connection(ArrayList pos, String text, String outputConnectorText, String inputConnectorText) {
+    _pos = pos;
+	_text = text;
+	_outputConnectorText = outputConnectorText;
+	_inputConnectorText = inputConnectorText;
+  }
+  
+  ArrayList getPos() { return _pos; }
+  String getText() { return _text; }
+  String getOutputConnectorText() { return _outputConnectorText; }
+  String getInputConnectorText() { return _inputConnectorText; }
+}
+
+// ***********
+// Class Point
+// ***********
+class Point {
+  float _x;
+  float _y;
+  
+  Point(float x, float y) {
+	_x = x;
+	_y = y;
+  }
+  
+  float getX() { return _x; }
+  float getY() { return _y; }
+}
+
+void setup() {
   size(wWidth,wHeight, P3D);
 }
 
-void draw(){
+void draw() {
   background(0);
   pointLight(150,255,255,200,200,200);
   // noLights();
@@ -53,43 +116,43 @@ void draw(){
   noStroke();
   noSmooth();
   fill(160);
-  // drawAxis();
   updateCamPosition();
   camera(camEyeX,camEyeY,camEyeZ,viewX,viewY,viewZ,camUpX,camUpY,camUpZ);
-  // drawCube();
   drawAxis();
   translate(0.0, 0.0, 0.0);
-  // box(50);
-  for (int i = 0; i < blocs.size(); i++) {
-    Led led = (Led)blocs.get(i);
-    led.display();
+  // draw items and connections
+  for (int i = 0; i < layers.size(); i++) {
+    Layer layer = (Layer)layers.get(i);
+	ArrayList items = layer.getItems();
+	fill((i + 1) * 100, 0, 0);
+	ArrayList connections = layer.getConnections();
+	for (int j = 0; j < items.size(); j++) {
+	  Item item = (Item)items.get(j);
+	  pushMatrix();
+	  translate(item.getX(), i * 100.0, item.getY());
+	  box(30);
+	  popMatrix();
+	}
+	println("Connections size = " + connections.size());
+	for (int j = 0; j < connections.size(); j++) {
+      Connection connection = (Connection)connections.get(j);
+	  ArrayList pos = connection.getPos();
+	  println("Pos size = " + pos.size());
+	  for (int k = 0; k < pos.size(); k++) {
+	    Point pt = (Point)pos.get(k);
+		if (k < pos.size() - 1) {
+		  Point next = (Point)pos.get(k + 1);
+		  stroke(255,255,255);
+		  line(pt.getX(), i * 100.0, pt.getY(), next.getX(), i * 100.0, next.getY());
+		  println(pt.getX() + ", " + (i * 100.0) + ", " + pt.getY() + " | " + next.getX() + ", " + (i * 100.0) + ", " + next.getY());
+		  noStroke();
+		}
+	  }
+	}
   }
 }
 
-class Led {
-  int x;
-  int y;
-  int z;
-  boolean isOn;
-  color bColor;
-
-  Led (int xPos, int yPos, int zPos, boolean state, color col) {
-    x = xPos;
-    y = yPos;
-    z = zPos;
-    isOn = state;
-    bColor = col;
-  }
-  void display() {
-    pushMatrix();
-    translate(x * (cubeSize / 3), y * (cubeSize / 3), z * (cubeSize / 3));
-    fill(bColor);
-    box(30);
-    popMatrix();
-  }
-}
-
-void drawAxis(){
+void drawAxis() {
   stroke(0,255,0);
   line(0,0,0,200,0,0);
   stroke(0,0,255);
@@ -99,42 +162,25 @@ void drawAxis(){
   noStroke();
 }
 
-void drawCube() {
-   for (int i = 0; i < 125; i++) {
-   /*
-    switch (i) {
-     case 0 : ledCube[i].bColor = color(255,255,255); break;
-     case 12 : ledCube[i].bColor = color(255,0,0); break;
-     case 48 : ledCube[i].bColor = color(0,255,0); break;
-     case 60 : ledCube[i].bColor = color(0,0,255); break;
-    }
-	*/
-    ledCube[i].display();
-  } 
-}
-
-void updateCamPosition(){
+void updateCamPosition() {
     camEyeX = rho * cos(radians(theta)) * cos(radians(phi));
     camEyeY = rho * sin(radians(theta));
     camEyeZ = rho * cos(radians(theta)) * sin(radians(phi));
     
-      //Prevent flipping if camera moves past top or bottom of cube
-      if ((theta > 90.0 && theta < 270.0) || (theta < -90.0 && theta > -270.0))
-    {
+    //Prevent flipping if camera moves past top or bottom of cube
+    if ((theta > 90.0 && theta < 270.0) || (theta < -90.0 && theta > -270.0)) {
       camUpY = -1.0;
-    }
-    else
-    {
+    } else {
       camUpY = 1.0;
     }
 }
 
-void mouseDragged(){
-  if (mouseButton == LEFT){
+void mouseDragged() {
+  if (mouseButton == LEFT) {
     theta = theta + (pmouseY - mouseY);
     phi = phi - (pmouseX - mouseX);
   }
-  if (mouseButton == RIGHT){
+  if (mouseButton == RIGHT) {
     rho = rho - (pmouseY - mouseY);    
   }
 }
