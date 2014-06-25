@@ -2,6 +2,8 @@
 ArrayList layers = new ArrayList();
 ArrayList getLayers() { return layers; }
 
+Color[] colors = new Color[3];
+
 int cubeSize = 150;
 
 int wWidth = 1483;
@@ -48,6 +50,11 @@ class Layer {
   
   ArrayList getItems() { return _items; }
   ArrayList getConnections() { return _connections; }
+  
+  void clear() {
+    _items.clear();
+	_connections.clear();
+  }
 }
 
 // **********
@@ -107,13 +114,35 @@ class Point {
   float getY() { return _y; }
 }
 
+// ***********
+// Class Color
+// ***********
+class Color {
+  int _r;
+  int _g;
+  int _b;
+  
+  Color(int r, int g, int b) {
+    _r = r;
+	_g = g;
+	_b = b;
+  }
+  
+  int getR() { return _r; }
+  int getG() { return _g; }
+  int getB() { return _b; }
+}
+
 void setup() {
   size(wWidth,wHeight, P3D);
   
-  println("dw = " + dw + ", " + "dh = " + dh);
+  colors[0] = new Color(255, 0, 0);
+  colors[1] = new Color(0, 255, 0);
+  colors[2] = new Color(0, 0, 255);
 }
 
 void performeGravityCenter() {
+  /*
   float minX = 1000000.0;
   float maxX = -1000000.0;
   float minY = 1000000.0;
@@ -134,9 +163,28 @@ void performeGravityCenter() {
   viewX = (minX + maxX) / 2.0;
   viewY = 0;
   viewZ = (minY + maxY) / 2.0;
+  */
+  float sumX = 0.0;
+  float sumY = 0.0;
+  int nbItems = 0;
+  for (int i = 0; i < layers.size(); i++) {
+    Layer layer = (Layer)layers.get(i);
+	ArrayList items = layer.getItems();
+	for (int j = 0; j < items.size(); j++) {
+	  Item item = (Item)items.get(j);
+	  sumX += item.getX();
+	  sumY += item.getY();
+	  nbItems++;
+	}
+  }
+  dw = sumX / nbItems;
+  dh = sumY / nbItems;
+  // println("dw = " + dw + ", " + "dh = " + dh);
 }
 
 void draw() {
+  // text test
+  
   background(0);
   pointLight(150,255,255,200,200,200);
   // noLights();
@@ -144,7 +192,6 @@ void draw() {
   noStroke();
   noSmooth();
   fill(160);
-  // performeGravityCenter();
   updateCamPosition();
   camera(camEyeX,camEyeY,camEyeZ,viewX,viewY,viewZ,camUpX,camUpY,camUpZ);
   drawAxis();
@@ -153,12 +200,12 @@ void draw() {
   for (int i = 0; i < layers.size(); i++) {
     Layer layer = (Layer)layers.get(i);
 	ArrayList items = layer.getItems();
-	fill((i + 1) * 100, 0, 0);
+	fill(colors[i].getR(), colors[i].getG(), colors[i].getB());
 	ArrayList connections = layer.getConnections();
 	for (int j = 0; j < items.size(); j++) {
 	  Item item = (Item)items.get(j);
 	  pushMatrix();
-	  translate(item.getX() + dw, i * 100.0, item.getY() + dh);
+	  translate(item.getX() - dw, i * 100.0, item.getY() - dh);
 	  box(50);
 	  popMatrix();
 	}
@@ -170,7 +217,10 @@ void draw() {
 		if (k < pos.size() - 1) {
 		  Point next = (Point)pos.get(k + 1);
 		  stroke(255,255,255);
+		  pushMatrix();
+		  translate(-dw, 0, -dh);
 		  line(pt.getX(), i * 100.0, pt.getY(), next.getX(), i * 100.0, next.getY());
+		  popMatrix();
 		  noStroke();
 		}
 	  }

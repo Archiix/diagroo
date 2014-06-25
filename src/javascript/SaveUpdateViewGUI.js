@@ -161,6 +161,29 @@ function updateVertices(vertices, draw2DConnection) {
 	vertices[0].y = sourceItem.getY();
 	vertices[length - 1].x = targetItem.getX();
 	vertices[length - 1].y = targetItem.getY();
+	/*
+	if (length > 2) {
+		vertices[1].y = vertices[0].y;
+		vertices[length - 2].y = vertices[length - 1].y;
+	}
+	*/
+	if (length > 2) {
+		if ((vertices[0].x != vertices[1].x) && (vertices[0].y != vertices[1].y)) { // correction !
+			if (Math.abs(vertices[0].x - vertices[1].x) < Math.abs(vertices[0].y - vertices[1].y)) {
+				vertices[1].x = vertices[0].x;
+			} else {
+				vertices[1].y = vertices[0].y;
+			}
+		}
+		if ((vertices[length - 1].x != vertices[length - 2].x) && (vertices[length - 1].y != vertices[length - 2].y)) { // correction !
+			if (Math.abs(vertices[length - 2].x - vertices[length - 1].x) < Math.abs(vertices[length - 2].y - vertices[length - 1].y)) {
+				vertices[length - 2].x = vertices[length - 1].x;
+			} else {
+				vertices[length - 2].y = vertices[length - 1].y;
+			}
+		}
+	}
+	/*
 	if (length > 3) {
 		var p0x = vertices[0].x;
 		var p0y = vertices[0].y;
@@ -168,7 +191,7 @@ function updateVertices(vertices, draw2DConnection) {
 		var p1y = vertices[1].y;
 		if (p0x === p1x) {
 			vertices[1].x = vertices[0].x;
-		} else {
+		} else if (p0y === p1y) {
 			vertices[1].y = vertices[0].y;
 		}
 		p0x = vertices[length - 1].x;
@@ -177,11 +200,11 @@ function updateVertices(vertices, draw2DConnection) {
 		p1y = vertices[length - 2].y;
 		if (p0x === p1x) {
 			vertices[length - 2].x = vertices[length - 1].x;
-		} else {
+		} else if (p0y === p1y){
 			vertices[length - 2].y = vertices[length - 1].y;
 		}
 	}
-	if (length === 3) {
+	else if (length === 3) {
 		var p0x = vertices[0].x;
 		var p0y = vertices[0].y;
 		var p1x = vertices[1].x;
@@ -194,4 +217,5 @@ function updateVertices(vertices, draw2DConnection) {
 			vertices[1].y = vertices[0].y;
 		}
 	}
+	*/
 }

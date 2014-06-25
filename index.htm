@@ -1014,6 +1014,7 @@
 				processingInstance.setHeight(documentHeight); // pas pris en compte
 				
 				var layersSketch = processingInstance.getLayers();
+				layersSketch.clear();
 				// fill layers, items and connections
 				$.ajaxSetup({async:false});
 				// toutes les couches
@@ -1042,7 +1043,7 @@
 					}
 					layersSketch.add(newLayerSketch);
 				}
-				
+				processingInstance.performeGravityCenter();
 				processingInstance.loop();  // call Processing loop() function
 			} else {
 				processingInstance.noLoop(); // stop animation, call noLoop()
