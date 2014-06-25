@@ -113,6 +113,7 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 				points.push({"x": vertice.getX(), "y": vertice.getY()});
 			}
 			console.log(points.length);
+			updateVertices(points, currentDraw2DConnection);
 			var newConnectionView = new ConnectionView(layerId, viewId, points, currentConnection._id);
 			
 			couchDBJQuery.couch.db("diagroo").saveDoc(newConnectionView, {
@@ -134,6 +135,7 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 				console.log(vertice);
 				points.push({"x": vertice.getX(), "y": vertice.getY()});
 			}
+			updateVertices(points, currentDraw2DConnection);
 			connectionViewToUpdate.vertices = points;
 			console.log(points.length);
 			couchDBJQuery.couch.db("diagroo").saveDoc(connectionViewToUpdate, {
@@ -145,4 +147,51 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 		}
 	}
 	/* *************************************************************************************************************** */
+}
+
+function updateVertices(vertices, draw2DConnection) {
+	var targetPort = draw2DConnection.getTarget();
+	var sourcePort = draw2DConnection.getSource();
+	var targetConnector = targetPort.getParent();
+	var sourceConnector = sourcePort.getParent();
+	var targetItem = targetConnector.getParent();
+	var sourceItem = sourceConnector.getParent();
+	var length = vertices.length;
+	vertices[0].x = sourceItem.getX();
+	vertices[0].y = sourceItem.getY();
+	vertices[length - 1].x = targetItem.getX();
+	vertices[length - 1].y = targetItem.getY();
+	if (length > 3) {
+		var p0x = vertices[0].x;
+		var p0y = vertices[0].y;
+		var p1x = vertices[1].x;
+		var p1y = vertices[1].y;
+		if (p0x === p1x) {
+			vertices[1].x = vertices[0].x;
+		} else {
+			vertices[1].y = vertices[0].y;
+		}
+		p0x = vertices[length - 1].x;
+		p0y = vertices[length - 1].y;
+		p1x = vertices[length - 2].x;
+		p1y = vertices[length - 2].y;
+		if (p0x === p1x) {
+			vertices[length - 2].x = vertices[length - 1].x;
+		} else {
+			vertices[length - 2].y = vertices[length - 1].y;
+		}
+	}
+	if (length === 3) {
+		var p0x = vertices[0].x;
+		var p0y = vertices[0].y;
+		var p1x = vertices[1].x;
+		var p1y = vertices[1].y;
+		if (p0x === p1x) {
+			vertices[1].x = vertices[0].x;
+			vertices[1].y = vertices[2].y;
+		} else {
+			vertices[1].x = vertices[2].x;
+			vertices[1].y = vertices[0].y;
+		}
+	}
 }

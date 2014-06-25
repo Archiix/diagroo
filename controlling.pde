@@ -31,6 +31,9 @@ float theta = 90;
 float phi = 0;       
 float rho = 300;   //distance from cam to point of view
 
+float dw = 0.0;
+float dh = 0.0;
+
 // ***********
 // Class Layer
 // ***********
@@ -106,6 +109,31 @@ class Point {
 
 void setup() {
   size(wWidth,wHeight, P3D);
+  
+  println("dw = " + dw + ", " + "dh = " + dh);
+}
+
+void performeGravityCenter() {
+  float minX = 1000000.0;
+  float maxX = -1000000.0;
+  float minY = 1000000.0;
+  float maxY = -1000000.0;
+  for (int i = 0; i < layers.size(); i++) {
+    Layer layer = (Layer)layers.get(i);
+	ArrayList items = layer.getItems();
+	for (int j = 0; j < items.size(); j++) {
+	  Item item = (Item)items.get(j);
+	  float x = item.getX();
+	  float y = item.getY();
+	  if (x < minX) { minX = x; }
+	  if (x > maxX) { maxX = x; }
+	  if (y < minY) { minY = y; }
+	  if (y > maxY) { maxY = y; }
+	}
+  }
+  viewX = (minX + maxX) / 2.0;
+  viewY = 0;
+  viewZ = (minY + maxY) / 2.0;
 }
 
 void draw() {
@@ -116,6 +144,7 @@ void draw() {
   noStroke();
   noSmooth();
   fill(160);
+  // performeGravityCenter();
   updateCamPosition();
   camera(camEyeX,camEyeY,camEyeZ,viewX,viewY,viewZ,camUpX,camUpY,camUpZ);
   drawAxis();
@@ -129,22 +158,19 @@ void draw() {
 	for (int j = 0; j < items.size(); j++) {
 	  Item item = (Item)items.get(j);
 	  pushMatrix();
-	  translate(item.getX(), i * 100.0, item.getY());
-	  box(30);
+	  translate(item.getX() + dw, i * 100.0, item.getY() + dh);
+	  box(50);
 	  popMatrix();
 	}
-	println("Connections size = " + connections.size());
 	for (int j = 0; j < connections.size(); j++) {
       Connection connection = (Connection)connections.get(j);
 	  ArrayList pos = connection.getPos();
-	  println("Pos size = " + pos.size());
 	  for (int k = 0; k < pos.size(); k++) {
 	    Point pt = (Point)pos.get(k);
 		if (k < pos.size() - 1) {
 		  Point next = (Point)pos.get(k + 1);
 		  stroke(255,255,255);
 		  line(pt.getX(), i * 100.0, pt.getY(), next.getX(), i * 100.0, next.getY());
-		  println(pt.getX() + ", " + (i * 100.0) + ", " + pt.getY() + " | " + next.getX() + ", " + (i * 100.0) + ", " + next.getY());
 		  noStroke();
 		}
 	  }
