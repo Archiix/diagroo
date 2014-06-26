@@ -63,16 +63,22 @@ class Layer {
 class Item {
   float _x;
   float _y;
+  float _width;
+  float _height;
   String _text;
   
-  Item(float x, float y, String text) {
+  Item(float x, float y, float width, float height, String text) {
     _x = x;
 	_y = y;
+	_width = width;
+	_height = height;
 	_text = text;
   }
   
   float getX() { return _x; }
   float getY() { return _y; }
+  float getWidth() { return _width; }
+  float getHeight() { return _height; }
   String getText() { return _text; }
 }
 
@@ -133,12 +139,17 @@ class Color {
   int getB() { return _b; }
 }
 
+PFont font;
+
 void setup() {
   size(wWidth,wHeight, P3D);
   
   colors[0] = new Color(255, 0, 0);
   colors[1] = new Color(0, 255, 0);
   colors[2] = new Color(0, 0, 255);
+  
+  font = loadFont("_sans");
+  textFont(font, 32);
 }
 
 void performeGravityCenter() {
@@ -184,7 +195,8 @@ void performeGravityCenter() {
 
 void draw() {
   // text test
-  
+  // ...
+  // println("text");
   background(0);
   pointLight(150,255,255,200,200,200);
   // noLights();
@@ -196,6 +208,10 @@ void draw() {
   camera(camEyeX,camEyeY,camEyeZ,viewX,viewY,viewZ,camUpX,camUpY,camUpZ);
   drawAxis();
   translate(0.0, 0.0, 0.0);
+  
+  fill(255, 255, 255);
+  text("The quick brown fox jumped over the lazy dog.", 0, 0, 0);
+  
   // draw items and connections
   for (int i = 0; i < layers.size(); i++) {
     Layer layer = (Layer)layers.get(i);
@@ -205,8 +221,9 @@ void draw() {
 	for (int j = 0; j < items.size(); j++) {
 	  Item item = (Item)items.get(j);
 	  pushMatrix();
-	  translate(item.getX() - dw, i * 100.0, item.getY() - dh);
-	  box(50);
+	  translate(item.getX() - dw + 50, i * 105.0, item.getY() - dh + 50);
+	  // box(100);
+	  box(item.getWidth(), item.getHeight(), item.getHeight());
 	  popMatrix();
 	}
 	for (int j = 0; j < connections.size(); j++) {

@@ -89,7 +89,7 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 	onDoubleClick: function() {
 		console.log("[Draw2DConnector.js] Draw2DConnector ID = " + this.getId());
 		// w, h = 30, 16 or w, h = 16, 30
-		// change de face le connecteur
+		// change de face le connecteur 0, 1, 2, 3 | N S E W
 		switch (this.faceIndex) {
 			case 0:
 				this.faceIndex = 3;

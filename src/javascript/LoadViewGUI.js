@@ -10,6 +10,8 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		
 		var x = currentItemView.x;
 		var y = currentItemView.y;
+		var width = currentItemView.width;
+		var height = currentItemView.height;
 		var itemId = currentItemView.itemId;
 		
 		// get item model
@@ -19,6 +21,7 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		
 		var newDraw2DItem = new Draw2DItem(100, 100, text);
 		newDraw2DItem.setPosition(x, y);
+		newDraw2DItem.setDimension(width, height);
 		newDraw2DItem.setId(itemId);
 		
 		items.add(newDraw2DItem);
@@ -83,11 +86,13 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		newDraw2DConnection.setSource(outputConnector.getOutputPort(0));
 		newDraw2DConnection.setTarget(inputConnector.getInputPort(0));
 		newDraw2DConnection.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
+		
 		var vertices = new draw2d.util.ArrayList();
 		for (var j = 0; j < currentConnectionView.vertices.length; j++) {
 			var vertice = currentConnectionView.vertices[j];
 			vertices.add(new draw2d.geo.Point(vertice.x, vertice.y));
 		}
+		
 		// id, inputConnectorId, outputConnectorId
 		connections.add(new Connection(connectionId, inputConnectorId, outputConnectorId));
 		draw2DConnections.add(newDraw2DConnection);
@@ -95,10 +100,12 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		
 		outputConnector.repaint();
 		inputConnector.repaint();
+		/*
 		console.log(newDraw2DConnection.getVertices());
 		// console.log(vertices);
 		newDraw2DConnection.setVertices(vertices).repaint();
 		console.log(newDraw2DConnection.getVertices());
+		*/
 	}
 }
 

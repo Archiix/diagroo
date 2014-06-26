@@ -16,7 +16,7 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 		var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemView', {'key': '["'+layerId+'","'+viewId+'","'+itemId+'"]'}).responseText);
 		if (itemView.rows.length == 0) {
 			// layerId, x, y, itemId
-			var newItemView = new ItemView(layerId, viewId, currentItem.getX(), currentItem.getY(), itemId);
+			var newItemView = new ItemView(layerId, viewId, currentItem.getX(), currentItem.getY(), currentItem.getWidth(), currentItem.getHeight(), itemId);
 			
 			couchDBJQuery.couch.db("diagroo").saveDoc(newItemView, {
 				success: function(data) { // saved !
@@ -48,6 +48,8 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 			var itemExisting = itemView.rows[0].value;
 			itemExisting.x = currentItem.getX();
 			itemExisting.y = currentItem.getY();
+			itemExisting.width = currentItem.getWidth();
+			itemExisting.height = currentItem.getHeight();
 			couchDBJQuery.couch.db("diagroo").saveDoc(itemExisting, {
 				success: function(data) { // re-saved !
 				},
@@ -157,32 +159,98 @@ function updateVertices(vertices, draw2DConnection) {
 	var targetItem = targetConnector.getParent();
 	var sourceItem = sourceConnector.getParent();
 	var length = vertices.length;
+	
+	switch (sourceConnector.faceIndex) {
+		case 0: // n
+			vertices[0].y += 30;
+			break;
+		case 1: // s
+			vertices[0].y -= 30;
+			break;
+		case 2: // e
+			vertices[0].x += 30;
+			break;
+		case 3: // w
+			vertices[0].x -= 30;
+			break;
+	}
+	switch (targetConnector.faceIndex) {
+		case 0: // n
+			vertices[length - 1].y += 30;
+			break;
+		case 1: // s
+			vertices[length - 1].y -= 30;
+			break;
+		case 2: // e
+			vertices[length - 1].x += 30;
+			break;
+		case 3: // w
+			vertices[length - 1].x -= 30;
+			break;
+	}
+	/*
 	vertices[0].x = sourceItem.getX();
 	vertices[0].y = sourceItem.getY();
 	vertices[length - 1].x = targetItem.getX();
 	vertices[length - 1].y = targetItem.getY();
-	/*
+	switch (sourceConnector.faceIndex) {
+		case 0: // n
+			vertices[0].y -= sourceItem.getHeight() / 2;
+			break;
+		case 1: // s
+			vertices[0].y += sourceItem.getHeight() / 2;
+			break;
+		case 2: // e
+			vertices[0].x -= sourceItem.getWidth() / 2;
+			break;
+		case 3: // w
+			vertices[0].x += sourceItem.getWidth() / 2;
+			break;
+	}
+	switch (targetConnector.faceIndex) {
+		case 0: // n
+			vertices[length - 1].y -= targetItem.getHeight() / 2;
+			break;
+		case 1: // s
+			vertices[length - 1].y += targetItem.getHeight() / 2;
+			break;
+		case 2: // e
+			vertices[length - 1].x -= targetItem.getWidth() / 2;
+			break;
+		case 3: // w
+			vertices[length - 1].x -= targetItem.getWidth() / 2;
+			break;
+	}
 	if (length > 2) {
 		vertices[1].y = vertices[0].y;
 		vertices[length - 2].y = vertices[length - 1].y;
 	}
 	*/
+	/*
+	if (length > 2) {
+		if ((vertices[0].x != vertices[1].x) && (vertices[0].y != vertices[1].y)) {
+			if (vertices[1].x > vertices[0].x) vertices[1].x = vertices[0].x;
+		}
+	}
+	/*
+	/*
 	if (length > 2) {
 		if ((vertices[0].x != vertices[1].x) && (vertices[0].y != vertices[1].y)) { // correction !
-			if (Math.abs(vertices[0].x - vertices[1].x) < Math.abs(vertices[0].y - vertices[1].y)) {
+			if (Math.abs(vertices[0].x - vertices[1].x) > Math.abs(vertices[0].y - vertices[1].y)) {
 				vertices[1].x = vertices[0].x;
 			} else {
 				vertices[1].y = vertices[0].y;
 			}
 		}
 		if ((vertices[length - 1].x != vertices[length - 2].x) && (vertices[length - 1].y != vertices[length - 2].y)) { // correction !
-			if (Math.abs(vertices[length - 2].x - vertices[length - 1].x) < Math.abs(vertices[length - 2].y - vertices[length - 1].y)) {
+			if (Math.abs(vertices[length - 1].x - vertices[length - 2].x) > Math.abs(vertices[length - 1].y - vertices[length - 2].y)) {
 				vertices[length - 2].x = vertices[length - 1].x;
 			} else {
 				vertices[length - 2].y = vertices[length - 1].y;
 			}
 		}
 	}
+	*/
 	/*
 	if (length > 3) {
 		var p0x = vertices[0].x;

@@ -25,8 +25,8 @@ var Draw2DConnection = draw2d.Connection.extend({
 		this.label.installEditor(new draw2d.ui.LabelInplaceEditor());
 		
 		this.setDeleteable(false);
-		// this.setDraggable(false);
-		// this.setSelectable(false);
+		this.setDraggable(false);
+		this.setSelectable(false);
     },
 	
 	getText: function() {
