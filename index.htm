@@ -610,6 +610,9 @@
 			
 			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
 				figure = canvas.getBestFigure(x, y);
+				if (figure instanceof draw2d.shape.basic.Label) {
+					figure = figure.getParent();
+				}
 				// déplacement d'un connecteur
 				if (figure != null && figure instanceof Draw2DConnector && ctrlKey) {
 					var parent = figure.getParent();
@@ -1027,7 +1030,8 @@
 					var itemsView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemsView', {'key': '["'+layer.id+'","'+viewId+'"]'}).responseText).rows;
 					for (var j = 0; j < itemsView.length; j++) {
 						var itemView = itemsView[j].value;
-						itemsSketch.add(new processingInstance.Item(itemView.x, itemView.y, itemView.width, itemView.height, "text"));
+						var item = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + itemView.itemId).responseText);
+						itemsSketch.add(new processingInstance.Item(itemView.x, itemView.y, itemView.width, itemView.height, item.text));
 					}
 					var connectionsView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionsView', {'key': '["'+layer.id+'","'+viewId+'"]'}).responseText).rows;
 					for (var j = 0; j < connectionsView.length; j++) {

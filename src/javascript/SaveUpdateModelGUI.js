@@ -12,7 +12,7 @@ function saveUpdateModel(modelId, layerId, items, connections, draw2DConnections
 			save(newItem);
 			for (var j = 0; j < currentItem.connectors.getSize(); j++) {
 				var currentConnector = currentItem.connectors.get(j);
-				var newConnector = new Connector(currentConnector.getId(), currentItem.getId(), layerId, currentConnector.type);
+				var newConnector = new Connector(currentConnector.getId(), currentItem.getId(), layerId, currentConnector.type, currentConnector.getText());
 				save(newConnector);
 			}
 		} else { // existe déjâ
@@ -24,7 +24,7 @@ function saveUpdateModel(modelId, layerId, items, connections, draw2DConnections
 				console.log("[Connector ID] " + currentConnector.getId());
 				var connector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentConnector.getId()).responseText);
 				if (connector.error && connector.error == "not_found") {
-					var newConnector = new Connector(currentConnector.getId(), currentItem.getId(), layerId, currentConnector.type);
+					var newConnector = new Connector(currentConnector.getId(), currentItem.getId(), layerId, currentConnector.type, currentConnector.getText());
 					save(newConnector);
 				} else {
 					// TODO => mise à jour du texte (label du connecteur)

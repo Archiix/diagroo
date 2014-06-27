@@ -20,6 +20,7 @@ var Draw2DConnection = draw2d.Connection.extend({
 		this.label = new draw2d.shape.basic.Label("connection");
 		this.setColor("#0d0d0d");
 		this.label.setFontColor("#0d0d0d");
+		this.label.setStroke(0);
 		
 		this.addFigure(this.label, new draw2d.layout.locator.ManhattanMidpointLocator(this));
 		this.label.installEditor(new draw2d.ui.LabelInplaceEditor());

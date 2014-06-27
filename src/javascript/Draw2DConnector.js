@@ -11,14 +11,13 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		this.setAlpha(Styles.Alpha);
 		
 		// Display a text ?
-		/*
 		this.label = new draw2d.shape.basic.Label(text);
 		this.label.setColor("#0d0d0d");
 		this.label.setFontColor("#0d0d0d");
 		this.label.installEditor(new draw2d.ui.LabelInplaceEditor());
+		this.label.setStroke(0);
 		
 		this.addFigure(this.label, new draw2d.layout.locator.CenterLocator(this));
-		*/
 		
 		this.locator = locator;
 		this.port = null;
@@ -39,7 +38,6 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 		console.log("test");
 	},
 	
-	/*
 	getText: function() {
 		return this.label.getText();
 	},
@@ -47,9 +45,6 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 	setText: function(text) {
 		this.label.setText(text);
 	},
-	*/
-	
-	
 	
 	getLocator: function() {
 		return this.locator;

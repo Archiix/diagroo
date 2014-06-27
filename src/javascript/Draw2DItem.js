@@ -14,6 +14,7 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		this.label.setColor("#000");
 		this.label.setFontColor("#000");
 		this.label.installEditor(new draw2d.ui.LabelInplaceEditor());
+		this.label.setStroke(0);
 		// this.label.onMouseEnter = function() {this.mouseEntered()};
 		// this.label.onMouseLeave = function() {};
 		
@@ -118,6 +119,39 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	
 	onOtherFigureIsResizing: function(figure) {
 		console.log(figure.getText());
+		/*
+		this.addPort(this.northPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, 10));
+		this.addPort(this.southPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() / 2, this.getHeight() - 10));
+		this.addPort(this.westPort, new draw2d.layout.locator.XYAbsPortLocator(10, this.getHeight() / 2));
+		this.addPort(this.eastPort, new draw2d.layout.locator.XYAbsPortLocator(this.getWidth() - 10, this.getHeight() / 2));
+		*/
+		var northPortLocator = this.northPort.getLocator();
+		northPortLocator.x = this.getWidth() / 2;
+		northPortLocator.y = 10;
+		var westPortLocator = this.westPort.getLocator();
+		westPortLocator.x = 10;
+		westPortLocator.y = this.getHeight() / 2;
+		var eastPortLocator = this.eastPort.getLocator();
+		eastPortLocator.x = this.getWidth() - 10;
+		eastPortLocator.y = this.getHeight() / 2;
+		var southPortLocator = this.southPort.getLocator();
+		southPortLocator.x = this.getWidth() / 2;
+		southPortLocator.y = this.getHeight() - 10;
+		for (var i = 0; i < this.connectors.getSize(); i++) {
+			var c = this.connectors.get(i);
+			var locator = c.getLocator();
+			switch (c.faceIndex) {
+				case 1:
+					locator.y = this.getHeight();
+					break;
+				case 3:
+					locator.x = this.getWidth();
+					break;
+				default:
+					break;
+			}
+			this.repaint();
+		}
 	},
 	
 	setLayerStyle: function() {

@@ -34,7 +34,7 @@ function ConverterJSON() {
 		}
 		
 		var locator = new draw2d.layout.locator.XYAbsPortLocator(0, 0);
-		var draw2DConnector = new Draw2DConnector(w, h, "c", locator, faceIndex);
+		var draw2DConnector = new Draw2DConnector(w, h, obj.text, locator, faceIndex);
 		draw2DConnector.setId(obj._id);
 		return draw2DConnector;
 	}

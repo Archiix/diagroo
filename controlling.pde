@@ -29,12 +29,13 @@ float camUpY = 1;
 float camUpZ = 0;
 
 //Polar coordinates
-float theta = 90;      
-float phi = 0;       
-float rho = 300;   //distance from cam to point of view
+float theta = 0;      
+float phi = 90;       
+float rho = 900;   //distance from cam to point of view
 
 float dw = 0.0;
 float dh = 0.0;
+float dz = 0.0;
 
 // ***********
 // Class Layer
@@ -153,30 +154,9 @@ void setup() {
 }
 
 void performeGravityCenter() {
-  /*
-  float minX = 1000000.0;
-  float maxX = -1000000.0;
-  float minY = 1000000.0;
-  float maxY = -1000000.0;
-  for (int i = 0; i < layers.size(); i++) {
-    Layer layer = (Layer)layers.get(i);
-	ArrayList items = layer.getItems();
-	for (int j = 0; j < items.size(); j++) {
-	  Item item = (Item)items.get(j);
-	  float x = item.getX();
-	  float y = item.getY();
-	  if (x < minX) { minX = x; }
-	  if (x > maxX) { maxX = x; }
-	  if (y < minY) { minY = y; }
-	  if (y > maxY) { maxY = y; }
-	}
-  }
-  viewX = (minX + maxX) / 2.0;
-  viewY = 0;
-  viewZ = (minY + maxY) / 2.0;
-  */
   float sumX = 0.0;
   float sumY = 0.0;
+  float sumZ = 0.0;
   int nbItems = 0;
   for (int i = 0; i < layers.size(); i++) {
     Layer layer = (Layer)layers.get(i);
@@ -185,12 +165,26 @@ void performeGravityCenter() {
 	  Item item = (Item)items.get(j);
 	  sumX += item.getX();
 	  sumY += item.getY();
+	  sumZ += i * 200;
 	  nbItems++;
 	}
   }
   dw = sumX / nbItems;
   dh = sumY / nbItems;
-  // println("dw = " + dw + ", " + "dh = " + dh);
+  dz = sumZ / nbItems;
+}
+
+void YRotation(float x, float y, float z, float angle) {
+  float res[] = new float[3];
+  /*
+  z' = z*cos q - x*sin q
+  x' = z*sin q + x*cos q
+  y' = y
+  */
+  res[0] = z * sin(angle) + x * cos(angle);
+  res[1] = y;
+  res[2] = z * cos(angle) - x * sin(angle);
+  return res;
 }
 
 void draw() {
@@ -207,23 +201,42 @@ void draw() {
   updateCamPosition();
   camera(camEyeX,camEyeY,camEyeZ,viewX,viewY,viewZ,camUpX,camUpY,camUpZ);
   drawAxis();
-  translate(0.0, 0.0, 0.0);
+  // translate(0.0, 0.0, 0.0);
   
+  /*
+  pushMatrix();
+  rotateY(radians(-phi));
+  rotateZ(radians(theta));
+  rotateY(radians(90));
+  // rotateY(phi);
   fill(255, 255, 255);
-  text("The quick brown fox jumped over the lazy dog.", 0, 0, 0);
+  text("The quick brown fox jumped over the lazy dog.", -100, 0, 0);
+  popMatrix();
+  */
   
   // draw items and connections
   for (int i = 0; i < layers.size(); i++) {
     Layer layer = (Layer)layers.get(i);
 	ArrayList items = layer.getItems();
-	fill(colors[i].getR(), colors[i].getG(), colors[i].getB());
 	ArrayList connections = layer.getConnections();
 	for (int j = 0; j < items.size(); j++) {
 	  Item item = (Item)items.get(j);
 	  pushMatrix();
-	  translate(item.getX() - dw + 50, i * 105.0, item.getY() - dh + 50);
+	  fill(colors[i].getR(), colors[i].getG(), colors[i].getB());
+	  translate(item.getX() - dw + 50, i * 200.0 - dz, item.getY() - dh + 50);
 	  // box(100);
-	  box(item.getWidth(), item.getHeight(), item.getHeight());
+	  box(item.getWidth(), item.getWidth(), item.getHeight());
+	  rotateY(radians(-phi));
+      rotateZ(radians(theta));
+	  rotateY(radians(90));
+	  fill(255, 255, 255);
+	  noStroke();
+	  pushMatrix();
+	  translate(0, 0, item.getHeight());
+	  text(item.getText(), 0, 0, 0);
+	  popMatrix();
+	  // float res[] = YRotation(item.getX(), -item.getY(), i * 105.0, radians(-90));
+      // text(item.getText(), res[0], res[2], res[1]);
 	  popMatrix();
 	}
 	for (int j = 0; j < connections.size(); j++) {
@@ -236,7 +249,7 @@ void draw() {
 		  stroke(255,255,255);
 		  pushMatrix();
 		  translate(-dw, 0, -dh);
-		  line(pt.getX(), i * 100.0, pt.getY(), next.getX(), i * 100.0, next.getY());
+		  line(pt.getX(), i * 200.0 - dz, pt.getY(), next.getX(), i * 200.0 - dz, next.getY());
 		  popMatrix();
 		  noStroke();
 		}
