@@ -28,6 +28,7 @@ function saveUpdateModel(modelId, layerId, items, connections, draw2DConnections
 					save(newConnector);
 				} else {
 					// TODO => mise à jour du texte (label du connecteur)
+					connector.text = currentConnector.getText();
 					save(connector);
 				}
 			}

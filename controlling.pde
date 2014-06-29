@@ -250,6 +250,30 @@ void draw() {
 		  pushMatrix();
 		  translate(-dw, 0, -dh);
 		  line(pt.getX(), i * 200.0 - dz, pt.getY(), next.getX(), i * 200.0 - dz, next.getY());
+		  if (k == 0) {
+		    translate(pt.getX(), i * 200.0 - dz, pt.getY());
+		    rotateY(radians(-phi));
+		    rotateZ(radians(theta));
+		    rotateY(radians(90));
+		    fill(0, 255, 0);
+		    text(connection.getOutputConnectorText(), 0, 0, 0);
+		  }
+		  if (k == pos.size() - 2) {
+		    translate(next.getX(), i * 200.0 - dz, next.getY());
+		    rotateY(radians(-phi));
+		    rotateZ(radians(theta));
+		    rotateY(radians(90));
+		    fill(0, 255, 0);
+		    text(connection.getInputConnectorText(), 0, 0, 0);
+		  }
+		  if (k == 1) {
+			translate(pt.getX(), i * 200.0 - dz, pt.getY());
+		    rotateY(radians(-phi));
+		    rotateZ(radians(theta));
+		    rotateY(radians(90));
+		    fill(0, 0, 255);
+		    text(connection.getText(), 0, 0, 0);
+		  }
 		  popMatrix();
 		  noStroke();
 		}

@@ -8,6 +8,7 @@
 		<link type="text/css" rel="stylesheet" href="draw2d_4_3_2/css/contextmenu.css" />
 		<link type="text/css" rel="stylesheet" href="src/css/example.css" />
 		<link type="text/css" rel="stylesheet" href="src/css/tooltip.css" />
+		<link type="text/css" rel="stylesheet" href="src/css/bootstrap.css" />
 		<link type="text/css" rel="stylesheet" href="src/css/bootstrap.min.css" />
 		
 		<!-- JavaScript -->
@@ -497,6 +498,7 @@
 			window.setTimeout(destroyErrorMessages, 5000);
 		}
 		
+		
 		function moveListener() {
 			console.log();
 		}
@@ -672,6 +674,9 @@
 					canvas.removeFigure(srcCircle);
 					canvas.removeFigure(dstCircle);
 					dstConnector = canvas.getBestFigure(x, y);
+					if (dstConnector instanceof draw2d.shape.basic.Label) {
+						dstConnector = dstConnector.getParent();
+					}
 					if (dstConnector instanceof Draw2DConnector) {
 						if (srcConnector.type === dstConnector.type) {
 							console.log("New connection can't be create.");
@@ -976,6 +981,13 @@
 			<button id="resetButton" class="btn btn-primary">Reset</button>
 			<button id="to3DButton" class="btn btn-default">To 3D</button>
 		</div>
+		<div id="progressBar" style="margin: 10px; display: none;">
+			<div class="progress">
+			  <div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+				<span class="sr-only">100% Complete</span>
+			  </div>
+			</div>
+		</div>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-md-1" style="padding: 0 10px 0 10px">
@@ -991,6 +1003,14 @@
 			<button id="closeButton" class="btn btn-default">Close</button>
 		</div>
 		<script type="application/javascript">
+		function progressBar(flag) {
+				console.log("progressBar called !");
+				if (flag) {
+					$("#progressBar").css('display', 'block');
+				} else {
+					$("#progressBar").css('display', 'none');
+				}
+			}
 		// 3D with Process JS
 		var processingInstance;
 		function startSketch() {
@@ -1036,6 +1056,9 @@
 					var connectionsView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionsView', {'key': '["'+layer.id+'","'+viewId+'"]'}).responseText).rows;
 					for (var j = 0; j < connectionsView.length; j++) {
 						var connectionView = connectionsView[j].value;
+						var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connectionView.connectionId).responseText);
+						var outputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+						var inputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
 						console.log(connectionView);
 						var posSketch = new processingInstance.ArrayList();
 						for (var k = 0; k < connectionView.vertices.length; k++) {
@@ -1043,7 +1066,7 @@
 							console.log(p);
 							posSketch.add(new processingInstance.Point(p.x, p.y));
 						}
-						connectionsSketch.add(new processingInstance.Connection(posSketch, "text", "text", "text"));
+						connectionsSketch.add(new processingInstance.Connection(posSketch, connection.text, outputConnector.text, inputConnector.text));
 					}
 					layersSketch.add(newLayerSketch);
 				}
