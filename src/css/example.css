@@ -54,5 +54,11 @@ body {
 	bottom: 10px;
 }
 
+#saveButton {
+	position: absolute;
+	left: 10px;
+	bottom: 10px;
+}
+
 #area canvas {
 }

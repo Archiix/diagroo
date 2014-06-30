@@ -938,6 +938,9 @@
 				var area = $("#area");
 				area.css('display', 'none');
 			});
+			$("#saveButton").click(function() {
+				Processing.getInstanceById('sketch').save('test.png');
+			});;
 		});
 		</script>
 		<!-- GUI + CouchDB calls -->
@@ -1000,7 +1003,8 @@
 		</div>
 		<div id="area">
 			<canvas id="sketch" data-processing-sources="controlling.pde"></canvas>
-			<button id="closeButton" class="btn btn-default">Close</button>
+			<button id="saveButton" class="btn btn-default">Save as Image</button>
+			<button id="closeButton" class="btn btn-danger">Close</button>
 		</div>
 		<script type="application/javascript">
 		function progressBar(flag) {

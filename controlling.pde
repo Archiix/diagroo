@@ -223,16 +223,16 @@ void draw() {
 	  Item item = (Item)items.get(j);
 	  pushMatrix();
 	  fill(colors[i].getR(), colors[i].getG(), colors[i].getB());
-	  translate(item.getX() - dw + 50, i * 200.0 - dz, item.getY() - dh + 50);
+	  translate(item.getX() - dw + item.getWidth() / 2, i * 200.0 - dz, item.getY() - dh + item.getHeight() / 2);
 	  // box(100);
-	  box(item.getWidth(), item.getWidth(), item.getHeight());
+	  box(item.getWidth(), item.getHeight(), item.getHeight());
 	  rotateY(radians(-phi));
       rotateZ(radians(theta));
 	  rotateY(radians(90));
 	  fill(255, 255, 255);
 	  noStroke();
 	  pushMatrix();
-	  translate(0, 0, item.getHeight());
+	  translate(0, 0, item.getWidth());
 	  text(item.getText(), 0, 0, 0);
 	  popMatrix();
 	  // float res[] = YRotation(item.getX(), -item.getY(), i * 105.0, radians(-90));
@@ -251,28 +251,48 @@ void draw() {
 		  translate(-dw, 0, -dh);
 		  line(pt.getX(), i * 200.0 - dz, pt.getY(), next.getX(), i * 200.0 - dz, next.getY());
 		  if (k == 0) {
+		    pushMatrix();
 		    translate(pt.getX(), i * 200.0 - dz, pt.getY());
 		    rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
 		    fill(0, 255, 0);
 		    text(connection.getOutputConnectorText(), 0, 0, 0);
+			popMatrix();
 		  }
 		  if (k == pos.size() - 2) {
+		    pushMatrix();
 		    translate(next.getX(), i * 200.0 - dz, next.getY());
 		    rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
 		    fill(0, 255, 0);
 		    text(connection.getInputConnectorText(), 0, 0, 0);
+			popMatrix();
 		  }
+		  // if pos.size() >= 3
 		  if (k == 1) {
+		    pushMatrix();
 			translate(pt.getX(), i * 200.0 - dz, pt.getY());
 		    rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
 		    fill(0, 0, 255);
 		    text(connection.getText(), 0, 0, 0);
+			popMatrix();
+		  }
+		  // cas particulier !!!
+		  if (k == 0 && pos.size() == 2) {
+		    pushMatrix();
+			var newX = (pt.getX() + next.getX()) / 2.0;
+			var newY = (pt.getY() + next.getY()) / 2.0;
+			translate(newX, i * 200.0 - dz, newY);
+			rotateY(radians(-phi));
+		    rotateZ(radians(theta));
+		    rotateY(radians(90));
+		    fill(0, 0, 255);
+		    text(connection.getText(), 0, 0, 0);
+			popMatrix();
 		  }
 		  popMatrix();
 		  noStroke();
