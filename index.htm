@@ -809,7 +809,9 @@
 							}
 						break;
 					case false:
-						loadView(layerId, viewId, items, connections, draw2DConnections, canvas);
+						// Méga bricolage !!!
+						$("#loadingBox").show();
+						setTimeout(function() { loadView(layerId, viewId, items, connections, draw2DConnections, canvas); $("#loadingBox").hide(); }, 10);
 						break;
 				}
 			});
@@ -956,6 +958,7 @@
 	<body>
 		<div id="nav" style="margin: 10px">
 			<h1>diagroo - Relational diagram to view an IT infrastructure</h1>
+			<strong>Models</strong>
 			<select id="modelsSelect" multiple="multiple">
 				<option value="">No Models</option>
 			</select>
@@ -964,9 +967,11 @@
 				<option value="">No Items</option>
 			</select>
 			-->
+			<strong>Views</strong>
 			<select id="viewsSelect" multiple="multiple">
 				<option value="">No Views</option>
 			</select>
+			<strong>Layers</strong>
 			<select id="layersSelect" multiple="multiple">
 				<option value="">No Layers</option>
 			</select>
@@ -983,13 +988,7 @@
 			<button id="clearButton" class="btn btn-primary">Clear</button>
 			<button id="resetButton" class="btn btn-primary">Reset</button>
 			<button id="to3DButton" class="btn btn-default">To 3D</button>
-		</div>
-		<div id="progressBar" style="margin: 10px; display: none;">
-			<div class="progress">
-			  <div class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-				<span class="sr-only">100% Complete</span>
-			  </div>
-			</div>
+			<span id="loadingBox" style="display: none;">Loading ...<img src="src/css/img/ajax-loader.gif" alt="ajax-loader.gif" /></span>
 		</div>
 		<div class="container-fluid">
 			<div class="row">

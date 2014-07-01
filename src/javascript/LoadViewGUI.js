@@ -1,6 +1,5 @@
 
 function loadView(layerId, viewId, items, connections, draw2DConnections, canvas) {
-	/* progress bar */ $("#progressBar").css('display', 'block');
 	$.ajaxSetup({async:false});
 	
 	/* for the items */
@@ -109,7 +108,6 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		console.log(newDraw2DConnection.getVertices());
 		*/
 	}
-	/* ended progress bar */ $("#progressBar").css('display', 'none');
 }
 
 function searchDraw2DConnectorById(listOfItems, idConnector) {

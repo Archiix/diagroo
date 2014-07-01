@@ -1,6 +1,5 @@
 
 function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw2DItem object, connections ==> Connection object
-	/* progress bar */ progressBar(true);
 	$.ajaxSetup({async:false});
 	
 	for (var i = 0; i < items.getSize(); i++) {
@@ -149,8 +148,6 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 			});
 		}
 	}
-	/* *************************************************************************************************************** */
-	/* ended progress bar */ progressBar(false);
 }
 
 function updateVertices(vertices, draw2DConnection) {

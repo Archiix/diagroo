@@ -31,7 +31,7 @@ float camUpZ = 0;
 //Polar coordinates
 float theta = 0;      
 float phi = 90;       
-float rho = 900;   //distance from cam to point of view
+float rho = 15000;   //distance from cam to point of view
 
 float dw = 0.0;
 float dh = 0.0;
@@ -143,14 +143,16 @@ class Color {
 PFont font;
 
 void setup() {
-  size(wWidth,wHeight, P3D);
+  size(wWidth, wHeight, OPENGL);
   
-  colors[0] = new Color(255, 0, 0);
-  colors[1] = new Color(0, 255, 0);
-  colors[2] = new Color(0, 0, 255);
+  colors[0] = new Color(211, 255, 215);
+  colors[1] = new Color(237, 152, 140);
+  colors[2] = new Color(252, 202, 132);
   
-  font = loadFont("_sans");
-  textFont(font, 32);
+  font = createFont("arial", 32, false);
+
+  textFont(font);
+  textAlign(CENTER);
 }
 
 void performeGravityCenter() {
@@ -174,46 +176,28 @@ void performeGravityCenter() {
   dz = sumZ / nbItems;
 }
 
-void YRotation(float x, float y, float z, float angle) {
-  float res[] = new float[3];
-  /*
-  z' = z*cos q - x*sin q
-  x' = z*sin q + x*cos q
-  y' = y
-  */
-  res[0] = z * sin(angle) + x * cos(angle);
-  res[1] = y;
-  res[2] = z * cos(angle) - x * sin(angle);
-  return res;
+void shiftingText(x1, y1, z1, x2, y2, z2) {
+  PVector v1 = new PVector(x1, y1, z1);
+  PVector v2 = new PVector(x2, y2, z2);
+  v2.sub(v1);
+  v2.normalize();
+  v2.mult(50);
+  translate(v2.x, v2.z, v2.y);
 }
 
 void draw() {
-  // text test
-  // ...
-  // println("text");
-  background(0);
-  pointLight(150,255,255,200,200,200);
-  // noLights();
+  background(255, 255, 255);
+  // pointLight(150, 255, 255, 200, 200, 200);
+  directionalLight(150, 255, 255, camEyeX, camEyeY, camEyeZ);
   lights();
-  noStroke();
-  noSmooth();
-  fill(160);
+  smooth();
   updateCamPosition();
-  camera(camEyeX,camEyeY,camEyeZ,viewX,viewY,viewZ,camUpX,camUpY,camUpZ);
-  drawAxis();
-  // translate(0.0, 0.0, 0.0);
-  
-  /*
-  pushMatrix();
-  rotateY(radians(-phi));
-  rotateZ(radians(theta));
-  rotateY(radians(90));
-  // rotateY(phi);
-  fill(255, 255, 255);
-  text("The quick brown fox jumped over the lazy dog.", -100, 0, 0);
-  popMatrix();
-  */
-  
+  camera(camEyeX, camEyeY, camEyeZ, viewX, viewY, viewZ, camUpX, camUpY, camUpZ);
+  float fov = PI / 100.0;
+  float cameraZ = (height/2.0) / tan(fov/2.0);
+  perspective(fov, float(width)/float(height),cameraZ/10.0,cameraZ*10.0);
+  // textFont(font, te);
+  // drawAxis();
   // draw items and connections
   for (int i = 0; i < layers.size(); i++) {
     Layer layer = (Layer)layers.get(i);
@@ -223,20 +207,21 @@ void draw() {
 	  Item item = (Item)items.get(j);
 	  pushMatrix();
 	  fill(colors[i].getR(), colors[i].getG(), colors[i].getB());
-	  translate(item.getX() - dw + item.getWidth() / 2, i * 200.0 - dz, item.getY() - dh + item.getHeight() / 2);
-	  // box(100);
+	  PVector pos = new PVector(item.getX() - dw + item.getWidth() / 2, item.getY() - dh + item.getHeight() / 2 ,i * 200.0 - dz);
+	  translate(pos.x, pos.z, pos.y);
 	  box(item.getWidth(), item.getHeight(), item.getHeight());
 	  rotateY(radians(-phi));
       rotateZ(radians(theta));
 	  rotateY(radians(90));
-	  fill(255, 255, 255);
-	  noStroke();
+	  fill(0);
+	  // noStroke();
 	  pushMatrix();
 	  translate(0, 0, item.getWidth());
-	  text(item.getText(), 0, 0, 0);
+	  // PVector textPos = new PVector(camEyeX + pos.x, camEyeZ + pos.z, camEyeY + pos.y);
+	  // textPos.mult(-0.15);
+	  textSize(16);
+	  text(item.getText(), 0, 0, 100);
 	  popMatrix();
-	  // float res[] = YRotation(item.getX(), -item.getY(), i * 105.0, radians(-90));
-      // text(item.getText(), res[0], res[2], res[1]);
 	  popMatrix();
 	}
 	for (int j = 0; j < connections.size(); j++) {
@@ -246,27 +231,33 @@ void draw() {
 	    Point pt = (Point)pos.get(k);
 		if (k < pos.size() - 1) {
 		  Point next = (Point)pos.get(k + 1);
-		  stroke(255,255,255);
+		  stroke(0);
 		  pushMatrix();
 		  translate(-dw, 0, -dh);
 		  line(pt.getX(), i * 200.0 - dz, pt.getY(), next.getX(), i * 200.0 - dz, next.getY());
 		  if (k == 0) {
 		    pushMatrix();
 		    translate(pt.getX(), i * 200.0 - dz, pt.getY());
+			
+			shiftingText(pt.getX(), pt.getY(), i * 200.0 - dz, next.getX(), next.getY(), i * 200.0 - dz); // test
+			
 		    rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
-		    fill(0, 255, 0);
+		    fill(0);
 		    text(connection.getOutputConnectorText(), 0, 0, 0);
 			popMatrix();
 		  }
 		  if (k == pos.size() - 2) {
 		    pushMatrix();
 		    translate(next.getX(), i * 200.0 - dz, next.getY());
+			
+			shiftingText(next.getX(), next.getY(), i * 200.0 - dz, pt.getX(), pt.getY(), i * 200.0 - dz); // test
+			
 		    rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
-		    fill(0, 255, 0);
+		    fill(0);
 		    text(connection.getInputConnectorText(), 0, 0, 0);
 			popMatrix();
 		  }
@@ -277,7 +268,7 @@ void draw() {
 		    rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
-		    fill(0, 0, 255);
+		    fill(0);
 		    text(connection.getText(), 0, 0, 0);
 			popMatrix();
 		  }
@@ -290,7 +281,7 @@ void draw() {
 			rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
-		    fill(0, 0, 255);
+		    fill(0);
 		    text(connection.getText(), 0, 0, 0);
 			popMatrix();
 		  }
@@ -331,6 +322,6 @@ void mouseDragged() {
     phi = phi - (pmouseX - mouseX);
   }
   if (mouseButton == RIGHT) {
-    rho = rho - (pmouseY - mouseY);    
+    rho = rho - (pmouseY - mouseY) * 10.0;    
   }
 }

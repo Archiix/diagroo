@@ -1,6 +1,6 @@
 
 // type = Input ou Output
-function selectConnectors(itemId, listOfConnectors, listOfOtherConnectors, listOfConnections, listOfOtherItem, listOfActions, type) {
+function selectConnectors(itemId, listOfConnectors, listOfOtherConnectors, listOfConnections, listOfOtherItem, listOfActions, type, text) {
 	var connectors = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/get' + type + 'ConnectorsByItem', {'key': '"' + itemId + '"'}).responseText);
 	for (var i = 0; i < connectors.rows.length; i++) {
 		var connector = connectors.rows[i].value;
@@ -21,7 +21,7 @@ function selectConnectors(itemId, listOfConnectors, listOfOtherConnectors, listO
 			
 			var prefix = type == "Output" ? ";output" : ";input";
 			var newAction = {}
-			newAction[otherItem._id + prefix + ";" + otherConnector._id + ";" + connection._id] = {name: otherItem.text + " " + otherConnector._id.substring(0, 8), icon: ""};
+			newAction[otherItem._id + prefix + ";" + otherConnector._id + ";" + connection._id] = {name: text + "["+connector.text+"]" + " -> " + otherItem.text + "["+otherConnector.text+"]", icon: ""};
 			listOfActions.push(newAction);
 		}
 	}
@@ -45,8 +45,8 @@ function contextMenuItem(item, x, y, faceIndex) {
 	var outputConnectorsAction = new Array();
 	var inputConnectorsAction = new Array();
 	
-	selectConnectors(item.getId(), tempOutputConnectors, tempInputConnectors, tempConnections, tempItems, outputConnectorsAction, "Output");
-	selectConnectors(item.getId(), tempInputConnectors, tempOutputConnectors, tempConnections, tempItems, inputConnectorsAction, "Input");
+	selectConnectors(item.getId(), tempOutputConnectors, tempInputConnectors, tempConnections, tempItems, outputConnectorsAction, "Output", item.getText());
+	selectConnectors(item.getId(), tempInputConnectors, tempOutputConnectors, tempConnections, tempItems, inputConnectorsAction, "Input", item.getText());
 	
 	for (var i = 0; i < outputConnectorsAction.length; i++) {
 		$.extend(actions, outputConnectorsAction[i]);
