@@ -46,8 +46,12 @@ body {
 	top: 0px;
 	width: 0px;
 	height: 0px;
+	background-color: #bbb;
+	-webkit-border-radius: 20px;
+	-moz-border-radius: 20px;
+	border-radius: 20px;
 }
-
+/*
 #closeButton {
 	position: absolute;
 	right: 10px;
@@ -59,6 +63,35 @@ body {
 	left: 10px;
 	bottom: 10px;
 }
+*/
+
+#title {
+	height: 60px;
+}
+
+#title table {
+	width: 100%;
+	height: 100%;
+}
 
 #area canvas {
+	border: 2px solid #bbb;
+}
+
+.slider {
+	width: 150px;
+}
+
+.centerCell {
+	text-align: center;
+}
+
+.rightCell {
+	text-align: right;
+	font-style: italic;
+}
+
+.title {
+	font-weight: bold;
+	text-decoration: underline;
 }

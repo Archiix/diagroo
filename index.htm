@@ -10,6 +10,7 @@
 		<link type="text/css" rel="stylesheet" href="src/css/tooltip.css" />
 		<link type="text/css" rel="stylesheet" href="src/css/bootstrap.css" />
 		<link type="text/css" rel="stylesheet" href="src/css/bootstrap.min.css" />
+		<link type="text/css" href="src/css/jquery-ui.min.css" rel="stylesheet">
 		
 		<!-- JavaScript -->
 		<!-- Draw2D Touch -->
@@ -421,6 +422,9 @@
         <script src="draw2d_4_3_2/src/storage/LocalFileStorage.js"> </script>
         <script src="draw2d_4_3_2/src/storage/TideSDKStorage.js"> </script>
 		
+		<!-- Javascript for JQuery UI -->
+		<script src="src/css/jquery-ui.min.js"></script>
+		
 		<!-- Javascript for CouchDB -->
 		<script type="text/javascript" src="https://diagroo.couchappy.com/_utils/script/json2.js"></script>
 		<script type="text/javascript" src="https://diagroo.couchappy.com/_utils/script/jquery.js"></script>
@@ -466,19 +470,19 @@
 			for (var i = 0; i < values.length; i++) {
 				switch (values[i]) {
 					case null:
-						errorsArea.append('<div><span class="label label-danger">ERROR: ' + variables[i] + ' must be not null.</span></div>');
+						errorsArea.append('<div class="alert alert-danger">ERROR: ' + variables[i] + ' must be not null.</div>');
 						nbErrors++;
 						break;
 					case undefined:
-						errorsArea.append('<div><span class="label label-danger">ERROR: ' + variables[i] + ' must be not undefined.</span></div>');
+						errorsArea.append('<div class="alert alert-danger">ERROR: ' + variables[i] + ' must be not undefined.</div>');
 						nbErrors++;
 						break;
 					case "":
-						errorsArea.append('<div><span class="label label-danger">ERROR: ' + variables[i] + ' must be not empty.</span></div>');
+						errorsArea.append('<div class="alert alert-danger">ERROR: ' + variables[i] + ' must be not empty.</div>');
 						nbErrors++;
 						break;
 					case 0:
-						errorsArea.append('<div><span class="label label-danger">ERROR: ' + variables[i] + ' must be not 0.</span></div>');
+						errorsArea.append('<div class="alert alert-danger">ERROR: ' + variables[i] + ' must be not 0.</div>');
 						nbErrors++;
 						break;
 					default:
@@ -493,17 +497,44 @@
 			var errorsArea = $('<div>', {
 				id: 'errors'
 			});
-			errorsArea.append('<div><span class="label label-warning">WARNING: ' + errorMessage + '</span></div>');
+			errorsArea.append('<div class="alert alert-warning">WARNING: ' + errorMessage + '</div>');
 			$("#nav").append(errorsArea);
 			window.setTimeout(destroyErrorMessages, 5000);
 		}
 		
-		
-		function moveListener() {
-			console.log();
-		}
-		
 		$(window).load(function() {
+			$( "#slider1" ).slider({
+				min: 25,
+				max: 500,
+				values: [200],
+				change: function(event, ui) {
+					var value = ui.value;
+					processingInstance.setSpaceBetweenLayer(value);
+					processingInstance.performeGravityCenter();
+					$("#spaceBetweenLayerSpan").text(value);
+				}
+			});
+			$( "#slider2" ).slider({
+				min: 25,
+				max: 200,
+				values: [100],
+				change: function(event, ui) {
+					var value = ui.value;
+					processingInstance.setItemHeight(value);
+					processingInstance.performeGravityCenter();
+					$("#itemHeight").text(value);
+				}
+			});
+			$( "#slider3" ).slider({
+				min: 12,
+				max: 50,
+				values: [20],
+				change: function(event, ui) {
+					var value = ui.value;
+					processingInstance.setFontSize(value);
+					$("#textSizeSpan").text(value);
+				}
+			});
 			/* globals variables declaration */
 			/* var */ converter = new ConverterJSON();
 			
@@ -916,22 +947,21 @@
 			$("#to3DButton").click(function() {
 				var documentWidth = $(document).width();
 				var documentHeight = $(document).height();
-				console.log("Document width = " + documentWidth);
-				console.log("Document height = " + documentHeight);
 				var area = $("#area");
 				var canvas = $("#area canvas");
-				area.css('display', 'block');
+				var titleText = $("#titleText");
 				var w = documentWidth - 100;
 				var h = documentHeight - 100;
 				var left = 50;
 				var top = 50;
+				area.css('display', 'block');
 				area.css('width', w);
 				area.css('height', h);
 				area.css('left', left);
 				area.css('top', top);
 				canvas.css('width', w);
-				canvas.css('height', h);
-				
+				canvas.css('height', h - 60);
+				titleText.text($("#modelsSelect option:selected").text() + " - " + $("#viewsSelect option:selected").text());
 				startSketch();
 			});
 			$("#closeButton").click(function() {
@@ -962,11 +992,6 @@
 			<select id="modelsSelect" multiple="multiple">
 				<option value="">No Models</option>
 			</select>
-			<!--
-			<select id="itemsSelect" multiple="multiple">
-				<option value="">No Items</option>
-			</select>
-			-->
 			<strong>Views</strong>
 			<select id="viewsSelect" multiple="multiple">
 				<option value="">No Views</option>
@@ -1000,11 +1025,28 @@
 				<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 600px; padding: 0" class="col-md-11"></div>
 			</div>
 		</div>
+
 		<div id="area">
+			<div id="title">
+				<table>
+					<tr>
+						<td class="centerCell title"><span id="titleText"></span></td>
+						<td class="rightCell"><span>Space Between Layer (<span id="spaceBetweenLayerSpan">200</span> Pixels): </span></td>
+						<td><div id="slider1" class="slider"></div></td>
+						<td class="rightCell"><span>Item Height (<span id="itemHeight">100</span> Pixels): </span></td>
+						<td><div id="slider2" class="slider"></div></td>
+						<td class="rightCell"><span>Text Size (<span id="textSizeSpan">20</span> Pixels): </span></span></td>
+						<td><div id="slider3" class="slider"></div></td>
+						<td class="centerCell">
+							<button id="saveButton" class="btn btn-default">Save as Image</button>
+							<button id="closeButton" class="btn btn-danger">Close</button>
+						</td>
+					</tr>
+				</table>
+			</div>
 			<canvas id="sketch" data-processing-sources="controlling.pde"></canvas>
-			<button id="saveButton" class="btn btn-default">Save as Image</button>
-			<button id="closeButton" class="btn btn-danger">Close</button>
 		</div>
+		
 		<script type="application/javascript">
 		function progressBar(flag) {
 				console.log("progressBar called !");
