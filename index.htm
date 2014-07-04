@@ -503,6 +503,8 @@
 		}
 		
 		$(window).load(function() {
+			$("#gfx_holder").css('cursor', 'move');
+			
 			$( "#slider1" ).slider({
 				min: 25,
 				max: 500,
@@ -641,45 +643,50 @@
 			dstCircle.setBackgroundColor("#000");
 			/* fin */
 			
+			var oldConnector = null;
 			policy.onMouseMove = function(c, x, y, shiftKey, ctrlKey) {
 				figure = canvas.getBestFigure(x, y);
 				if (figure instanceof draw2d.shape.basic.Label) {
 					figure = figure.getParent();
 				}
+				if (oldConnector == null && figure instanceof Draw2DConnector) {
+					oldConnector = figure;
+				}
+				if (!ctrlKey) oldConnector = null;
 				// déplacement d'un connecteur
-				if (figure != null && figure instanceof Draw2DConnector && ctrlKey) {
-					var parent = figure.getParent();
+				if (oldConnector != null && oldConnector instanceof Draw2DConnector && ctrlKey) {
+					var parent = oldConnector.getParent();
 					var xParent = parent.getX();        var yParent = parent.getY();
 					var wParent = parent.getWidth();    var hParent = parent.getHeight();
-					var xConnector = figure.getX();     var yConnector = figure.getY();
-					var wConnector = figure.getWidth(); var hConnector = figure.getHeight();
-					switch (figure.faceIndex) {
+					var xConnector = oldConnector.getX();     var yConnector = oldConnector.getY();
+					var wConnector = oldConnector.getWidth(); var hConnector = oldConnector.getHeight();
+					switch (oldConnector.faceIndex) {
 						case 0:
 							var newXPos = x - xParent;
 							if (newXPos >= wConnector / 2 && newXPos <= (wParent - (wConnector / 2))) {
-								figure.getLocator().x = newXPos - (wConnector / 2);
+								oldConnector.getLocator().x = newXPos - (wConnector / 2);
 							}
 							break;
 						case 1:
 							var newXPos = x - xParent;
 							if (newXPos >= wConnector / 2 && newXPos <= (wParent - (wConnector / 2))) {
-								figure.getLocator().x = newXPos - (wConnector / 2);
+								oldConnector.getLocator().x = newXPos - (wConnector / 2);
 							}
 							break;
 						case 2:
 							var newYPos = y - yParent;
 							if (newYPos >= hConnector / 2 && newYPos <= (hParent - (hConnector / 2))) {
-								figure.getLocator().y = newYPos - (hConnector / 2);
+								oldConnector.getLocator().y = newYPos - (hConnector / 2);
 							}
 							break;
 						case 3:
 							var newYPos = y - yParent;
 							if (newYPos >= hConnector / 2 && newYPos <= (hParent - (hConnector / 2))) {
-								figure.getLocator().y = newYPos - (hConnector / 2);
+								oldConnector.getLocator().y = newYPos - (hConnector / 2);
 							}
 							break;
 					}
-					figure.getParent().repaint();
+					oldConnector.getParent().repaint();
 				}
 				// multiple connection mode
 				if (figure != null && figure instanceof Draw2DConnector && shiftKey && !multipleConnectionMode) {
@@ -771,7 +778,7 @@
 			getModels($("#modelsSelect"));
 			
 			/* modelsSelect click event */
-			$("#modelsSelect").click(function() {
+			$("#modelsSelect").change(function() {
 				var modelId = $("#modelsSelect option:selected").val(); // model id
 				if (modelId) {
 					getItems(modelId, $("#itemsSelect"));
@@ -902,7 +909,11 @@
 				if (!displayErrorMessages([layerId, viewId], ['layer id', 'view id'])) {
 					return;
 				}
-				saveUpdateView(layerId, viewId, items, connections);
+				if (layerMode) {
+					saveUpdateView(layerId, viewId, items, connections);
+				} else {
+					saveUpdateView(layerId, viewId, items, connections);
+				}
 			});
 			/* clearButton click event */
 			$("#clearButton").click(function() {
@@ -986,23 +997,13 @@
 		<script type="text/javascript" src="src/javascript/DeleteConnectionGUI.js"></script>
 	</head>
 	<body>
-		<div id="nav" style="margin: 10px">
-			<h1>diagroo - Relational diagram to view an IT infrastructure</h1>
-			<!--
-			<strong>Models</strong>
-			<select id="modelsSelect" multiple="multiple">
-				<option value="">No Models</option>
-			</select>
-			<strong>Views</strong>
-			<select id="viewsSelect" multiple="multiple">
-				<option value="">No Views</option>
-			</select>
-			<strong>Layers</strong>
-			<select id="layersSelect" multiple="multiple">
-				<option value="">No Layers</option>
-			</select>
-			-->
-			<!-- <hr /> -->
+		<div class="container-fluid">
+		<div class="row">
+		<div class="col-md-2">
+			<h1>diagroo</h1>
+		</div>
+		<div class="col-md-10" style="padding: 0;">
+		<div id="nav">
 			<button id="newItemButton" class="btn btn-primary">New Item</button>
 			<button id="newModelButton" class="btn btn-primary">New Model</button>
 			<input type="text" id="modelNameInput" value="model name" />
@@ -1012,12 +1013,12 @@
 			<input type="text" id="viewNameInput" value="view name" />
 			<button id="saveModelButton" class="btn btn-primary">Save/Update Model</button>
 			<button id="saveViewButton" class="btn btn-primary">Save/Update View</button>
-			<button id="clearButton" class="btn btn-primary">Clear</button>
-			<button id="resetButton" class="btn btn-primary">Reset</button>
-			<button id="to3DButton" class="btn btn-default">To 3D</button>
+			<!-- <button id="clearButton" class="btn btn-primary">Clear</button> -->
+			<!-- <button id="resetButton" class="btn btn-primary">Reset</button> -->
 			<span id="loadingBox" style="display: none;">Loading ...<img src="src/css/img/ajax-loader.gif" alt="ajax-loader.gif" /></span>
 		</div>
-		<div class="container-fluid">
+		</div>
+		</div>
 			<div class="row">
 				<div class="col-md-1" style="padding: 0 10px 0 10px">
 					<!--  multiple="multiple" -->
@@ -1029,18 +1030,19 @@
 					<select id="viewsSelect">
 						<option value="">No Views</option>
 					</select>
+					<button id="to3DButton" class="btn btn-primary">To 3D</button>
 					<strong>Layers</strong>
-					<select id="layersSelect">
+					<select id="layersSelect" multiple="multiple">
 						<option value="">No Layers</option>
 					</select>
 				</div>
 				<div class="col-md-1" style="padding: 0 10px 0 10px">
 					<strong>Items</strong>
-					<select id="itemsSelect" multiple="multiple" style="height: 500px;">
+					<select id="itemsSelect" multiple="multiple" style="height: 630px;">
 						<option value="">No Items</option>
 					</select>
 				</div>
-				<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 600px; padding: 0" class="col-md-10"></div>
+				<div onselectstart="javascript:/*IE8 hack*/return false" id="gfx_holder" style="height: 650px; padding: 0" class="col-md-10"></div>
 			</div>
 		</div>
 

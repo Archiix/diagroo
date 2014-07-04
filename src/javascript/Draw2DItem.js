@@ -325,14 +325,19 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				return {
 					callback: function(key, options) {
 						switch(key) {
-							case "delete":
-								var result = confirm("Delete on the data base ?");
-								deleteItem(currentItem, canvas, items, connections, draw2DConnections, result);
+							case "removeFromView":
+								deleteItem(currentItem, canvas, items, connections, draw2DConnections, false);
 								break;
+							case "remove":
+								var result = confirm("Remove permanently ?");
+								if (result) {
+									deleteItem(currentItem, canvas, items, connections, draw2DConnections, true);
+								}
 						}
 					},
 					items: {
-						"delete": {name: "Delete", icon: ""}
+						"removeFromView": {name: "Remove From View", icon: ""},
+						"remove": {name: "Remove", icon: ""}
 					}
 				}
 			},

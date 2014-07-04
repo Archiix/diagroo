@@ -21,11 +21,6 @@ int wHeight = 733;
 void setWidth(int width) { wWidth = width; }
 void setHeight(int height) { wHeight = height; }
 
-//center
-//int cx = wWidth/2;
-//int cy = wHeight/2;
-//int cz = -cubeSize/2;
-
 //camera positions
 float camEyeX = 0;
 float camEyeY = 0;
@@ -149,6 +144,34 @@ class Color {
   int getB() { return _b; }
 }
 
+// ***********
+// Class Label
+// ***********
+class Label {
+	float _x;
+	float _y;
+	float _z;
+	String _text;
+	float _width;
+	float _zOffset;
+	
+	Label(float x, float y, float z, String text, float width, float zOffset) {
+		_x = x;
+		_y = y;
+		_z = z;
+		_text = text;
+		_width = width;
+		_zOffset = zOffset;
+	}
+	
+	float getX() { return _x; }
+	float getY() { return _y; }
+	float getZ() { return _z; }
+	String getText() { return _text; }
+	float getWidth() { return _width; }
+	float getZOffset() { return _zOffset; }
+}
+
 PFont font;
 
 /* @pjs font="DosisMedium.ttf"; */
@@ -182,33 +205,47 @@ void performeGravityCenter() {
 	for (int j = 0; j < items.size(); j++) {
 	  Item item = (Item)items.get(j);
 	  if (item.getX() < minX) minX = item.getX();
-	  if (item.getX() > maxX) maxX = item.getX();
+	  if (item.getX() > maxX) maxX = item.getX() + item.getWidth();
 	  if (item.getY() < minY) minY = item.getY();
-	  if (item.getY() > maxY) maxY = item.getY();
+	  if (item.getY() > maxY) maxY = item.getY() + item.getHeight();
 	  nbItems++;
 	}
     sumZ += i * spaceBetweenLayer;
   }
-  dw = abs(minX + maxX) / 2.0;
-  dh = abs(minY + maxY) / 2.0;
+  dw = minX + maxX / 2.0;
+  dh = minY + maxY / 2.0;
   dz = sumZ / layers.size();
 }
 
-void shiftingText(x1, y1, z1, x2, y2, z2) {
+PVector shiftingText(x1, y1, z1, x2, y2, z2) {
   PVector v1 = new PVector(x1, y1, z1);
   PVector v2 = new PVector(x2, y2, z2);
   v2.sub(v1);
   v2.normalize();
   v2.mult(50);
-  translate(v2.x, v2.z, v2.y);
+  // translate(v2.x, v2.z, v2.y);
+  return v2;
+}
+
+void drawLabels(ArrayList labels) {
+	for (int i = 0; i < labels.size(); i++) {
+		Label l = (Label)labels.get(i);
+		pushMatrix();
+		fill(0);
+		translate(l.getX(), l.getZ(), l.getY());
+		rotateY(radians(-phi));
+		rotateZ(radians(theta));
+		rotateY(radians(90));
+		translate(0, 0, l.getWidth());
+		text(l.getText(), 0, 0, l.getZOffset());
+		popMatrix();
+	}
 }
 
 void draw() {
   background(255, 255, 255);
-  // ambientLight(150,255,255)
-  // directionalLight(150, 255, 255, camEyeX, camEyeY, camEyeZ);
   lights();
-  smooth();
+  noSmooth();
   updateCamPosition();
   camera(camEyeX, camEyeY, camEyeZ, viewX, viewY, viewZ, camUpX, camUpY, camUpZ);
   
@@ -217,6 +254,8 @@ void draw() {
   perspective(fov, float(width)/float(height),cameraZ/10.0,cameraZ*10.0);
   
   textSize(fontSize);
+  
+  ArrayList labels = new ArrayList();
   
   // draw items and connections
   for (int i = 0; i < layers.size(); i++) {
@@ -227,17 +266,11 @@ void draw() {
 	  Item item = (Item)items.get(j);
 	  pushMatrix();
 	  fill(colors[i].getR(), colors[i].getG(), colors[i].getB());
+	  stroke(colors[i].getR(), colors[i].getG(), colors[i].getB());
 	  PVector pos = new PVector(item.getX() - dw + item.getWidth() / 2, item.getY() - dh + item.getHeight() / 2 ,i * spaceBetweenLayer - dz);
 	  translate(pos.x, pos.z, pos.y);
 	  box(item.getWidth(), itemHeight, item.getHeight());
-	  rotateY(radians(-phi));
-      rotateZ(radians(theta));
-	  rotateY(radians(90));
-	  fill(0);
-	  pushMatrix();
-	  translate(0, 0, item.getWidth());
-	  text(item.getText(), 0, 0, 100);
-	  popMatrix();
+	  labels.add(new Label(pos.x, pos.y, pos.z, item.getText(), item.getWidth(), 100));
 	  popMatrix();
 	}
 	for (int j = 0; j < connections.size(); j++) {
@@ -247,59 +280,68 @@ void draw() {
 	    Point pt = (Point)pos.get(k);
 		if (k < pos.size() - 1) {
 		  Point next = (Point)pos.get(k + 1);
-		  stroke(0);
+		  stroke(150, 150, 150);
 		  pushMatrix();
 		  translate(-dw, 0, -dh);
 		  line(pt.getX(), i * spaceBetweenLayer - dz, pt.getY(), next.getX(), i * spaceBetweenLayer - dz, next.getY());
 		  if (k == 0) {
-		    pushMatrix();
-		    translate(pt.getX(), i * spaceBetweenLayer - dz, pt.getY());
+		    // pushMatrix();
+			PVector p = shiftingText(pt.getX(), pt.getY(), i * spaceBetweenLayer - dz, next.getX(), next.getY(), i * spaceBetweenLayer - dz); // test
+			// translate(pt.getX() + p.x, i * spaceBetweenLayer - dz + p.z, pt.getY() + p.y);
 			
-			shiftingText(pt.getX(), pt.getY(), i * spaceBetweenLayer - dz, next.getX(), next.getY(), i * spaceBetweenLayer - dz); // test
+			labels.add(new Label(pt.getX() + p.x - dw, pt.getY() + p.y - dh, i * spaceBetweenLayer - dz + p.z, connection.getOutputConnectorText(), 0, 0));
 			
+			/*
 		    rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
 		    fill(0);
 		    text(connection.getOutputConnectorText(), 0, 0, 0);
 			popMatrix();
+			*/
 		  }
 		  if (k == pos.size() - 2) {
-		    pushMatrix();
-		    translate(next.getX(), i * spaceBetweenLayer - dz, next.getY());
+		    //pushMatrix();
+		    //translate(next.getX(), i * spaceBetweenLayer - dz, next.getY());
 			
-			shiftingText(next.getX(), next.getY(), i * spaceBetweenLayer - dz, pt.getX(), pt.getY(), i * spaceBetweenLayer - dz); // test
+			PVector p = shiftingText(next.getX(), next.getY(), i * spaceBetweenLayer - dz, pt.getX(), pt.getY(), i * spaceBetweenLayer - dz); // test
 			
+			labels.add(new Label(next.getX() + p.x - dw, next.getY() + p.y - dh, i * spaceBetweenLayer - dz + p.z, connection.getInputConnectorText(), 0, 0));
+			
+			/*
 		    rotateY(radians(-phi));
 		    rotateZ(radians(theta));
 		    rotateY(radians(90));
 		    fill(0);
 		    text(connection.getInputConnectorText(), 0, 0, 0);
 			popMatrix();
+			*/
 		  }
 		  // if pos.size() >= 3
 		  if (k == 1) {
-		    pushMatrix();
-			translate(pt.getX(), i * spaceBetweenLayer - dz, pt.getY());
-		    rotateY(radians(-phi));
-		    rotateZ(radians(theta));
-		    rotateY(radians(90));
-		    fill(0);
-		    text(connection.getText(), 0, 0, 0);
-			popMatrix();
+		    // pushMatrix();
+			// translate(pt.getX(), i * spaceBetweenLayer - dz, pt.getY());
+			labels.add(new Label(pt.getX() - dw, pt.getY() - dh, i * spaceBetweenLayer - dz, connection.getText(), 0, 0));
+		    // rotateY(radians(-phi));
+		    // rotateZ(radians(theta));
+		    // rotateY(radians(90));
+		    // fill(0);
+		    // text(connection.getText(), 0, 0, 0);
+			// popMatrix();
 		  }
 		  // cas particulier !!!
 		  if (k == 0 && pos.size() == 2) {
-		    pushMatrix();
+		    // pushMatrix();
 			var newX = (pt.getX() + next.getX()) / 2.0;
 			var newY = (pt.getY() + next.getY()) / 2.0;
-			translate(newX, i * spaceBetweenLayer - dz, newY);
-			rotateY(radians(-phi));
-		    rotateZ(radians(theta));
-		    rotateY(radians(90));
-		    fill(0);
-		    text(connection.getText(), 0, 0, 0);
-			popMatrix();
+			// translate(newX, i * spaceBetweenLayer - dz, newY);
+			labels.add(new Label(newX - dw, newY - dh, i * spaceBetweenLayer - dz, connection.getText(), 0, 0));
+			// rotateY(radians(-phi));
+		    // rotateZ(radians(theta));
+		    // rotateY(radians(90));
+		    // fill(0);
+		    // text(connection.getText(), 0, 0, 0);
+			// popMatrix();
 		  }
 		  popMatrix();
 		  noStroke();
@@ -307,6 +349,7 @@ void draw() {
 	  }
 	}
   }
+  drawLabels(labels);
 }
 
 void drawAxis() {
