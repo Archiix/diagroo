@@ -59,9 +59,14 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 			},
 			callback: $.proxy(function(key, options) {
 				switch(key) {
-					case "delete":
-						var result = confirm("Delete on the data base ?");
-						deleteConnector(currentConnector, currentConnector.getParent(), canvas, connections, draw2DConnections, result);
+					case "removeFromView":
+						deleteConnector(currentConnector, currentConnector.getParent(), canvas, connections, draw2DConnections, false);
+						break;
+					case "remove":
+						var result = confirm("Remove permanently ?");
+						if (result) {
+							deleteConnector(currentConnector, currentConnector.getParent(), canvas, connections, draw2DConnections, true);
+						}
 						break;
 					case "nextFace":
 						this.nextFace();
@@ -73,7 +78,8 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 			x: x,
 			y: y,
 			items: {
-				"delete": {name: "Delete", icon: ""},
+				"removeFromView": {name: "Remove From View", icon: ""},
+				"remove": {name: "Remove", icon: ""},
 				"nextFace": {name: "Next Face", icon: ""}
 			}
 		});

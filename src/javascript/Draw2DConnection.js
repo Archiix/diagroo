@@ -53,9 +53,14 @@ var Draw2DConnection = draw2d.Connection.extend({
 			},
 			callback: $.proxy(function(key, options) {
 				switch(key) {
-					case "delete":
-						var result = confirm("Delete on the data base ?");
-						deleteConnection(currentConnection, canvas, connections, draw2DConnections, result);
+					case "removeFromView":
+						deleteConnection(currentConnection, canvas, connections, draw2DConnections, false);
+						break;
+					case "remove":
+						var result = confirm("Remove permanently ?");
+						if (result) {
+							deleteConnection(currentConnection, canvas, connections, draw2DConnections, true);
+						}
 						break;
 					default:
 						break;
@@ -64,7 +69,8 @@ var Draw2DConnection = draw2d.Connection.extend({
 			x: x,
 			y: y,
 			items: {
-				"delete": {name: "Delete", icon: ""}
+				"removeFromView": {name: "Remove From View", icon: ""},
+				"remove": {name: "Remove", icon: ""}
 			}
 		});
 	},
