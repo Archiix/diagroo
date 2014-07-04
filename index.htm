@@ -509,7 +509,7 @@
 				min: 25,
 				max: 500,
 				values: [200],
-				change: function(event, ui) {
+				slide: function(event, ui) {
 					var value = ui.value;
 					processingInstance.setSpaceBetweenLayer(value);
 					processingInstance.performeGravityCenter();
@@ -520,7 +520,7 @@
 				min: 25,
 				max: 200,
 				values: [100],
-				change: function(event, ui) {
+				slide: function(event, ui) {
 					var value = ui.value;
 					processingInstance.setItemHeight(value);
 					processingInstance.performeGravityCenter();
@@ -531,7 +531,7 @@
 				min: 12,
 				max: 50,
 				values: [20],
-				change: function(event, ui) {
+				slide: function(event, ui) {
 					var value = ui.value;
 					processingInstance.setFontSize(value);
 					$("#textSizeSpan").text(value);
