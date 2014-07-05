@@ -33,9 +33,9 @@ float camUpY = 1;
 float camUpZ = 0;
 
 //Polar coordinates
-float theta = 0;      
-float phi = 90;       
-float initialRho = 15000;   //distance from cam to point of view
+float theta = -40;
+float phi = 60;
+float initialRho = 30000;   //distance from cam to point of view
 float rho = initialRho;
 
 float dw = 0.0;
@@ -380,6 +380,10 @@ void mouseDragged() {
     phi = phi - (pmouseX - mouseX);
   }
   if (mouseButton == RIGHT) {
-    rho = rho - (pmouseY - mouseY) * 10.0;    
+    rho = rho - (pmouseY - mouseY) * 10.0;
   }
+}
+
+void zoom(value) {
+    rho = rho -value * 10;
 }

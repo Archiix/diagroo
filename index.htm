@@ -528,15 +528,21 @@
 				}
 			});
 			$( "#slider3" ).slider({
-				min: 12,
+				min: 2,
 				max: 50,
-				values: [20],
+				values: [12],
 				change: function(event, ui) {
 					var value = ui.value;
 					processingInstance.setFontSize(value);
 					$("#textSizeSpan").text(value);
 				}
 			});
+
+            $("#sketch").bind('mousewheel', function(e){
+                e.preventDefault();
+                processingInstance.zoom(e.originalEvent.wheelDelta);
+            });
+
 			/* globals variables declaration */
 			/* var */ converter = new ConverterJSON();
 			
@@ -1055,7 +1061,7 @@
 						<td><div id="slider1" class="slider"></div></td>
 						<td class="rightCell"><span>Item Height (<span id="itemHeight">100</span> Pixels): </span></td>
 						<td><div id="slider2" class="slider"></div></td>
-						<td class="rightCell"><span>Text Size (<span id="textSizeSpan">20</span> Pixels): </span></span></td>
+						<td class="rightCell"><span>Text Size (<span id="textSizeSpan">12</span> Pixels): </span></span></td>
 						<td><div id="slider3" class="slider"></div></td>
 						<td class="centerCell">
 							<button id="saveButton" class="btn btn-default">Save as Image</button>
