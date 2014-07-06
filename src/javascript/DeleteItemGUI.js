@@ -58,26 +58,26 @@ function deleteItem(item, canvas, items, connections, draw2DConnections, deleteO
 		// récupérer les autres connecteurs sur la base de données
 		// récupérer les autres connections sur la base de données
 		// récupérer les autres "other" connectors sur la base de données
-		var connectors = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/getConnectorsByItem', {'key': '"' + draw2DItemId + '"'}).responseText).rows;
+		var connectors = JSON.parse($.get(mainURL+'/diagroo/_design/connector/_view/getConnectorsByItem', {'key': '"' + draw2DItemId + '"'}).responseText).rows;
 		for (var i = 0; i < connectors.length; i++) {
 			var connector = connectors[i].value;
 			documentsToDelete.push(connector._id);
 			switch (connector.portType) {
 				case "output":
-					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connector._id + '"'}).responseText).rows;
+					var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connector._id + '"'}).responseText).rows;
 					for (var j = 0; j < allConnections.length; j++) {
 						var connection = allConnections[j].value;
 						documentsToDelete.push(connection._id);
-						var otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
+						var otherConnector = JSON.parse($.get(mainURL+'/diagroo/' + connection.inputConnectorId).responseText);
 						otherConnectorsToDelete.push(otherConnector._id + ";" + otherConnector.portType);
 					}
 					break;
 				case "input":
-					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector._id + '"'}).responseText).rows;
+					var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector._id + '"'}).responseText).rows;
 					for (var j = 0; j < allConnections.length; j++) {
 						var connection = allConnections[j].value;
 						documentsToDelete.push(connection._id);
-						var otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+						var otherConnector = JSON.parse($.get(mainURL+'/diagroo/' + connection.outputConnectorId).responseText);
 						otherConnectorsToDelete.push(otherConnector._id + ";" + otherConnector.portType);
 					}
 					break;
@@ -94,13 +94,13 @@ function deleteItem(item, canvas, items, connections, draw2DConnections, deleteO
 			var connectorType = params[1];
 			switch (connectorType) {
 				case "output":
-					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
+					var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
 					if (allConnections.length == 0) {
 						deleteDocument(connectorId);
 					}
 					break;
 				case "input":
-					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
+					var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
 					if (allConnections.length == 0) {
 						deleteDocument(connectorId);
 					}
@@ -111,19 +111,19 @@ function deleteItem(item, canvas, items, connections, draw2DConnections, deleteO
 }
 
 function deleteDocument(documentId) {
-	var response = $.get('https://diagroo.couchappy.com/diagroo/' + documentId);
+	var response = $.get(mainURL+'/diagroo/' + documentId);
 	if (response.statusText === "OK") { // si le document existe sur la base de données
 		var document = JSON.parse(response.responseText);
 		var views = null;
 		switch (document.type) {
 			case "item":
-				views = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/allItemsView', {'key': '"' + document._id + '"'}).responseText);
+				views = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/allItemsView', {'key': '"' + document._id + '"'}).responseText);
 				break;
 			case "connector":
-				views = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/allConnectorsView', {'key': '"' + document._id + '"'}).responseText);
+				views = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/allConnectorsView', {'key': '"' + document._id + '"'}).responseText);
 				break;
 			case "connection":
-				views = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/allConnectionsView', {'key': '"' + document._id + '"'}).responseText);
+				views = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/allConnectionsView', {'key': '"' + document._id + '"'}).responseText);
 				break;
 		}
 		removeSynchronous(document._id, document._rev);

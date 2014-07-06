@@ -109,3 +109,10 @@ select{
 	margin-bottom: 10px;
 }
 
+#mainTitle {
+	font-family: Trebuchet MS, Verdana, Arial, Helvetica, sans-serif;
+	font-size : 2em ; line-height : 1.4em ; color : #222222;
+	margin-top: 20px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid #000;
+}

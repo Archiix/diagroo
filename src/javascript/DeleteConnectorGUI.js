@@ -34,20 +34,20 @@ function deleteConnector(connector, item, canvas, connections, draw2DConnections
 		// on récupère les autres connections sur la base de données
 		switch (connector.type) {
 			case "output":
-				var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows;
+				var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows;
 					for (var j = 0; j < allConnections.length; j++) {
 					var connection = allConnections[j].value;
 					documentsToDelete.push(connection._id);
-					var otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
+					var otherConnector = JSON.parse($.get(mainURL+'/diagroo/' + connection.inputConnectorId).responseText);
 					otherConnectorsToDelete.push(otherConnector._id + ";" + otherConnector.portType);
 				}
 				break;
 			case "input":
-				var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows;
+				var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connector.getId() + '"'}).responseText).rows;
 				for (var j = 0; j < allConnections.length; j++) {
 					var connection = allConnections[j].value;
 					documentsToDelete.push(connection._id);
-					var otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+					var otherConnector = JSON.parse($.get(mainURL+'/diagroo/' + connection.outputConnectorId).responseText);
 					otherConnectorsToDelete.push(otherConnector._id + ";" + otherConnector.portType);
 				}
 				break;
@@ -63,13 +63,13 @@ function deleteConnector(connector, item, canvas, connections, draw2DConnections
 			var connectorType = params[1];
 			switch (connectorType) {
 				case "output":
-					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
+					var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
 					if (allConnections.length == 0) {
 						deleteDocument(connectorId);
 					}
 					break;
 				case "input":
-					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
+					var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
 					if (allConnections.length == 0) {
 						deleteDocument(connectorId);
 					}

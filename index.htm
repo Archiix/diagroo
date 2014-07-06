@@ -501,6 +501,21 @@
 			$("#nav").append(errorsArea);
 			window.setTimeout(destroyErrorMessages, 5000);
 		}
+		function loadModel(modelId) {
+			clearCanvas();
+			if (modelId === "") {
+				getModels($("#modelsSelect"));
+				modelId = $("#modelsSelect option:first").val();
+			}
+			getItems(modelId, $("#itemsSelect"));
+			getViews(modelId, $("#viewsSelect"));
+			getLayers(modelId, $("#layersSelect"));
+			
+			var firstViewId = $("#viewsSelect option:first").val();
+			var firstLayerId = $("#layersSelect option:first").val();
+			
+			loadView(firstLayerId, firstViewId, items, connections, draw2DConnections, canvas);
+		}
 		
 		$(window).load(function() {
 			$("#gfx_holder").css('cursor', 'move');
@@ -547,6 +562,9 @@
 			/* var */ draw2DConnections = new draw2d.util.ArrayList();
 			/* var */ // nextDraw2DConnections = new draw2d.util.ArrayList();
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
+			
+			/* var */ // mainURL = "https://diagroo.couchappy.com";
+			/* var */ mainURL = "http://localhost:5984";
 			
 			var nextLayerItems = new draw2d.util.ArrayList();
 			var nextLayerConnections = new draw2d.util.ArrayList();
@@ -602,7 +620,7 @@
 			/* var */ layerMode = false; // variable globale
 			
 			/* faire mieux ... */
-			var clearCanvas = function() {
+			clearCanvas = function() {
 				for (var i = 0; i < items.getSize(); i++) {
 					items.get(i).removeAllConnections();
 					canvas.removeFigure(items.get(i));
@@ -775,16 +793,12 @@
 			var prevView = "";
 			
 			// Load all models
-			getModels($("#modelsSelect"));
+			loadModel("");
 			
 			/* modelsSelect click event */
 			$("#modelsSelect").change(function() {
 				var modelId = $("#modelsSelect option:selected").val(); // model id
-				if (modelId) {
-					getItems(modelId, $("#itemsSelect"));
-					getLayers(modelId, $("#layersSelect"));
-					getViews(modelId, $("#viewsSelect"));
-				}
+				loadModel(modelId);
 			});
 			/* itemsSelect double click event */
 			$("#itemsSelect").dblclick(function() {
@@ -829,9 +843,9 @@
 				switch (layerMode) {
 					case true:
 							loadView(layerId, viewId, items, connections, draw2DConnections, canvas);
-							var currentLayer = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + layerId).responseText);
+							var currentLayer = JSON.parse($.get(mainURL+'/diagroo/' + layerId).responseText);
 							var nextLayerIndex = currentLayer.index + 1;
-							var nextLayers = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/layer/_view/getLayerByIndex', {'key': '["'+modelId+'",'+nextLayerIndex+']'}).responseText).rows;
+							var nextLayers = JSON.parse($.get(mainURL+'/diagroo/_design/layer/_view/getLayerByIndex', {'key': '["'+modelId+'",'+nextLayerIndex+']'}).responseText).rows;
 							for (var i = 0; i < items.getSize(); i++) {
 								items.get(i).setLayerStyle();
 							}
@@ -1000,7 +1014,7 @@
 		<div class="container-fluid">
 		<div class="row">
 		<div class="col-md-2">
-			<h1>diagroo</h1>
+			<div id="mainTitle">diagroo</div>
 		</div>
 		<div class="col-md-10" style="padding: 0;">
 		<div id="nav">
@@ -1106,24 +1120,24 @@
 				// fill layers, items and connections
 				$.ajaxSetup({async:false});
 				// toutes les couches
-				var layers = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/layer/_view/getLayersByModel', {'key': '"'+modelId+'"'}).responseText).rows;
+				var layers = JSON.parse($.get(mainURL+'/diagroo/_design/layer/_view/getLayersByModel', {'key': '"'+modelId+'"'}).responseText).rows;
 				for (var i = 0; i < layers.length; i++) {
 					var layer = layers[i]; // layer._id + viewId == getItemsView
 					var newLayerSketch = new processingInstance.Layer();
 					var itemsSketch = newLayerSketch.getItems();
 					var connectionsSketch = new newLayerSketch.getConnections();
-					var itemsView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemsView', {'key': '["'+layer.id+'","'+viewId+'"]'}).responseText).rows;
+					var itemsView = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getItemsView', {'key': '["'+layer.id+'","'+viewId+'"]'}).responseText).rows;
 					for (var j = 0; j < itemsView.length; j++) {
 						var itemView = itemsView[j].value;
-						var item = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + itemView.itemId).responseText);
+						var item = JSON.parse($.get(mainURL+'/diagroo/' + itemView.itemId).responseText);
 						itemsSketch.add(new processingInstance.Item(itemView.x, itemView.y, itemView.width, itemView.height, item.text));
 					}
-					var connectionsView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionsView', {'key': '["'+layer.id+'","'+viewId+'"]'}).responseText).rows;
+					var connectionsView = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getConnectionsView', {'key': '["'+layer.id+'","'+viewId+'"]'}).responseText).rows;
 					for (var j = 0; j < connectionsView.length; j++) {
 						var connectionView = connectionsView[j].value;
-						var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connectionView.connectionId).responseText);
-						var outputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
-						var inputConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
+						var connection = JSON.parse($.get(mainURL+'/diagroo/' + connectionView.connectionId).responseText);
+						var outputConnector = JSON.parse($.get(mainURL+'/diagroo/' + connection.outputConnectorId).responseText);
+						var inputConnector = JSON.parse($.get(mainURL+'/diagroo/' + connection.inputConnectorId).responseText);
 						console.log(connectionView);
 						var posSketch = new processingInstance.ArrayList();
 						for (var k = 0; k < connectionView.vertices.length; k++) {

@@ -31,13 +31,13 @@ function deleteConnection(connection, canvas, connections, draw2DConnections, de
 			console.log(connectorType);
 			switch (connectorType) {
 				case "output":
-					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
+					var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByOutputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
 					if (allConnections.length == 0) {
 						deleteDocument(connectorId);
 					}
 					break;
 				case "input":
-					var allConnections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
+					var allConnections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionByInputConnector', {'key': '"' + connectorId + '"'}).responseText).rows;
 					if (allConnections.length == 0) {
 						deleteDocument(connectorId);
 					}

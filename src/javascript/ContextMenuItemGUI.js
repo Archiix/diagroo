@@ -1,22 +1,22 @@
 
 // type = Input ou Output
 function selectConnectors(itemId, listOfConnectors, listOfOtherConnectors, listOfConnections, listOfOtherItem, listOfActions, type, text) {
-	var connectors = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connector/_view/get' + type + 'ConnectorsByItem', {'key': '"' + itemId + '"'}).responseText);
+	var connectors = JSON.parse($.get(mainURL+'/diagroo/_design/connector/_view/get' + type + 'ConnectorsByItem', {'key': '"' + itemId + '"'}).responseText);
 	for (var i = 0; i < connectors.rows.length; i++) {
 		var connector = connectors.rows[i].value;
 		listOfConnectors.push(connector);
-		var connections = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/connection/_view/getConnectionBy' + type + 'Connector', {'key': '"' + connector._id + '"'}).responseText);
+		var connections = JSON.parse($.get(mainURL+'/diagroo/_design/connection/_view/getConnectionBy' + type + 'Connector', {'key': '"' + connector._id + '"'}).responseText);
 		for (var j = 0; j < connections.rows.length; j++) {
 			var connection = connections.rows[j].value;
 			listOfConnections.push(connection);
 			var otherConnector = null;
 			if (type == "Output") {
-				otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.inputConnectorId).responseText);
+				otherConnector = JSON.parse($.get(mainURL+'/diagroo/' + connection.inputConnectorId).responseText);
 			} else {
-				otherConnector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connection.outputConnectorId).responseText);
+				otherConnector = JSON.parse($.get(mainURL+'/diagroo/' + connection.outputConnectorId).responseText);
 			}
 			listOfOtherConnectors.push(otherConnector);
-			var otherItem = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + otherConnector.itemId).responseText);
+			var otherItem = JSON.parse($.get(mainURL+'/diagroo/' + otherConnector.itemId).responseText);
 			listOfOtherItem.push(otherItem);
 			
 			var prefix = type == "Output" ? ";output" : ";input";

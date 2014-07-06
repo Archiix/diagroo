@@ -1,22 +1,17 @@
 
 function getModels(modelsSelectHTML) {
-	couchDBJQuery.couch.db("diagroo").view("model/getModelByName", {
-		success: function(data) {
-			modelsSelectHTML.empty();
-			var modelsList = data.rows;
-			if (modelsList.length == 0) {
-				modelsSelectHTML.append('<option value="">No Models</option>');
-			}
-			for (var i = 0; i < modelsList.length; i++) {
-				var id = modelsList[i].id;
-				var text = modelsList[i].key;
-				modelsSelectHTML.append('<option value="' + id + '">' + text + '</option>');
-			}
-		},
-		error: function(status) {
-			console.log(status);
-		}
-	});
+	$.ajaxSetup({async:false});
+	var models = JSON.parse($.get(mainURL+'/diagroo/_design/model/_view/getModelByName').responseText);
+	modelsSelectHTML.empty();
+	if (models.rows.length == 0) {
+		modelsSelectHTML.append('<option value="">No Models</option>');
+	}
+	for (var i = 0; i < models.rows.length; i++) {
+		var model = models.rows[i];
+		var id = model.id;
+		var text = model.key;
+		modelsSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+	}
 }
 
 function getItems(modelId, itemsSelectHTML) {
@@ -41,46 +36,32 @@ function getItems(modelId, itemsSelectHTML) {
 }
 
 function getLayers(modelId, layersSelectHTML) {
-	couchDBJQuery.couch.db("diagroo").view("layer/getLayersByModel", {
-		success: function(data) {
-			layersSelectHTML.empty();
-			console.log(data);
-			var layersList = data.rows;
-			if (layersList.length == 0) {
-				layersSelectHTML.append('<option value="">No Layers</option>');
-			} else {
-				// trier la liste
-				layersList = layersList.sort(function(a, b) { return a.value.index - b.value.index; } );
-				for (var i = 0; i < layersList.length; i++) {
-					var id = layersList[i].id;
-					var text = layersList[i].value.name + ' - ' + layersList[i].value.index;
-					layersSelectHTML.append('<option value="' + id + '">' + text + '</option>');
-				}
-			}
-		},
-		error: function(status) {
-		},
-		key: modelId
-	});
+	$.ajaxSetup({async:false});
+	var layers = JSON.parse($.get(mainURL+'/diagroo/_design/layer/_view/getLayersByModel', {key: '"'+modelId+'"'}).responseText);
+	layersSelectHTML.empty();
+	if (layers.rows.length == 0) {
+		layersSelectHTML.append('<option value="">No Layers</option>');
+	}
+	layers.rows = layers.rows.sort(function(a, b) { return a.value.index - b.value.index; } );
+	for (var i = 0; i < layers.rows.length; i++) {
+		var layer = layers.rows[i];
+		var id = layer.id;
+		var text = layer.value.name + ' - ' + layer.value.index;
+		layersSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+	}
 }
 
 function getViews(modelId, viewsSelectHTML) {
-	couchDBJQuery.couch.db("diagroo").view("view/getViewsByModel", {
-		success: function(data) {
-			viewsSelectHTML.empty();
-			var viewsList = data.rows;
-			if (viewsList.length == 0) {
-				viewsSelectHTML.append('<option value="">No Views</option>');
-			} else {
-				for (var i = 0; i < viewsList.length; i++) {
-					var id = viewsList[i].id;
-					var text = viewsList[i].value;
-					viewsSelectHTML.append('<option value="' + id + '">' + text + '</option>');
-				}
-			}
-		},
-		error: function(status) {
-		},
-		key: modelId
-	});
+	$.ajaxSetup({async:false});
+	var views = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getViewsByModel', {key: '"'+modelId+'"'}).responseText);
+	viewsSelectHTML.empty();
+	if (views.rows.length == 0) {
+		viewsSelectHTML.append('<option value="">No Views</option>');
+	}
+	for (var i = 0; i < views.rows.length; i++) {
+		var view = views.rows[i];
+		var id = view.id;
+		var text = view.value;
+		viewsSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+	}
 }

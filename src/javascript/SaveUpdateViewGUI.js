@@ -13,7 +13,7 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 		console.log(itemId);
 		// est ce que l'itemView existe déjà
 		
-		var itemView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemView', {'key': '["'+layerId+'","'+viewId+'","'+itemId+'"]'}).responseText);
+		var itemView = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getItemView', {'key': '["'+layerId+'","'+viewId+'","'+itemId+'"]'}).responseText);
 		if (itemView.rows.length == 0) {
 			// layerId, x, y, itemId
 			var newItemView = new ItemView(layerId, viewId, currentItem.getX(), currentItem.getY(), currentItem.getWidth(), currentItem.getHeight(), itemId);
@@ -25,7 +25,7 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 				}
 			});
 			
-			// $.post('https://diagroo.couchappy.com/diagroo', JSON.stringify(newItemView));
+			// $.post(mainURL+'/diagroo', JSON.stringify(newItemView));
 			
 			// on sauve aussi les connecteurs
 			for (var j = 0; j < currentItem.connectors.getSize(); j++) {
@@ -40,7 +40,7 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 					}
 				});
 				
-				// $.post('https://diagroo.couchappy.com/diagroo', JSON.stringify(newConnectorView));
+				// $.post(mainURL+'/diagroo', JSON.stringify(newConnectorView));
 			}
 		} else {
 			console.log("mise à jour vue"); // passe pas là !!!
@@ -61,7 +61,7 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 				var currentConnector = currentItem.connectors.get(j);
 				var idConnector = currentConnector.getId();
 				// get ConnectorView object
-				var connectorView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorView', {'key': '["'+layerId+'","'+viewId+'","'+idConnector+'"]'}).responseText);
+				var connectorView = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getConnectorView', {'key': '["'+layerId+'","'+viewId+'","'+idConnector+'"]'}).responseText);
 				if (connectorView.rows.length > 0) {
 					var connectorViewToUpdate = connectorView.rows[0].value;
 					
@@ -103,7 +103,7 @@ function saveUpdateView(layerId, viewId, items, connections) { // items ==> Draw
 		}
 		console.assert(currentConnection._id === currentDraw2DConnection.getId()); // il faut que les deux correspondent
 		/* ended */
-		var connectionView = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionView', {'key': '["'+layerId+'","'+viewId+'","'+currentConnection._id+'"]'}).responseText);
+		var connectionView = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getConnectionView', {'key': '["'+layerId+'","'+viewId+'","'+currentConnection._id+'"]'}).responseText);
 		if (connectionView.rows.length == 0) {
 			// layerId, vertices, connectionId
 			// var newConnectionView = new ConnectionView(layerId, viewId, [], currentConnection._id);

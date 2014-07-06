@@ -4,7 +4,7 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 	
 	/* for the items */
 	
-	var itemsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getItemsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
+	var itemsByLayerId = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getItemsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
 	for (var i = 0; i < itemsByLayerId.rows.length; i++) {
 		var currentItemView = itemsByLayerId.rows[i].value;
 		
@@ -15,7 +15,7 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		var itemId = currentItemView.itemId;
 		
 		// get item model
-		var currentItemModel = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + itemId).responseText);
+		var currentItemModel = JSON.parse($.get(mainURL+'/diagroo/' + itemId).responseText);
 		
 		var text = currentItemModel.text;
 		
@@ -29,7 +29,7 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 	}
 	
 	/* for the connectors */
-	var connectorsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectorsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
+	var connectorsByLayerId = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getConnectorsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
 	for (var i = 0; i < connectorsByLayerId.rows.length; i++) {
 		var currentConnectorView = connectorsByLayerId.rows[i].value;
 		
@@ -37,7 +37,7 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 		var y = currentConnectorView.y;
 		var faceIndex = currentConnectorView.faceIndex;
 		var connectorId = currentConnectorView.connectorId;
-		var connectorModel = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connectorId).responseText);
+		var connectorModel = JSON.parse($.get(mainURL+'/diagroo/' + connectorId).responseText);
 		var parentIdItem = connectorModel.itemId;
 		
 		// chercher le parent concerné par le connecteur (itemParent) => Draw2DItem
@@ -54,11 +54,11 @@ function loadView(layerId, viewId, items, connections, draw2DConnections, canvas
 	}
 	
 	/* for the connections */
-	var connectionsByLayerId = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/_design/view/_view/getConnectionsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
+	var connectionsByLayerId = JSON.parse($.get(mainURL+'/diagroo/_design/view/_view/getConnectionsView', {'key': '["'+layerId+'","'+viewId+'"]'}).responseText);
 	for (var i = 0; i < connectionsByLayerId.rows.length; i++) {
 		var currentConnectionView = connectionsByLayerId.rows[i].value;
 		var connectionId = currentConnectionView.connectionId;
-		var connectionModel = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + connectionId).responseText);
+		var connectionModel = JSON.parse($.get(mainURL+'/diagroo/' + connectionId).responseText);
 		var inputConnectorId = connectionModel.inputConnectorId;
 		var outputConnectorId = connectionModel.outputConnectorId;
 		console.log(connectionModel);

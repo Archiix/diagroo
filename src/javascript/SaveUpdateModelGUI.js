@@ -6,7 +6,7 @@ function saveUpdateModel(modelId, layerId, items, connections, draw2DConnections
 	for (var i = 0; i < items.getSize(); i++) {
 		var currentItem = items.get(i);
 		console.log("[Item ID] " + currentItem.getId());
-		var item = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentItem.getId()).responseText);
+		var item = JSON.parse($.get(mainURL+'/diagroo/' + currentItem.getId()).responseText);
 		if (item.error && item.error == "not_found") {
 			var newItem = new Item(currentItem.getId(), modelId, layerId, currentItem.getText());
 			save(newItem);
@@ -22,7 +22,7 @@ function saveUpdateModel(modelId, layerId, items, connections, draw2DConnections
 			for (var j = 0; j < currentItem.connectors.getSize(); j++) {
 				var currentConnector = currentItem.connectors.get(j);
 				console.log("[Connector ID] " + currentConnector.getId());
-				var connector = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentConnector.getId()).responseText);
+				var connector = JSON.parse($.get(mainURL+'/diagroo/' + currentConnector.getId()).responseText);
 				if (connector.error && connector.error == "not_found") {
 					var newConnector = new Connector(currentConnector.getId(), currentItem.getId(), layerId, currentConnector.type, currentConnector.getText());
 					save(newConnector);
@@ -39,7 +39,7 @@ function saveUpdateModel(modelId, layerId, items, connections, draw2DConnections
 	for (var i = 0; i < connections.getSize(); i++) {
 		var currentConnection = connections.get(i);
 		console.log("[Connection ID] " + currentConnection._id);
-		var connection = JSON.parse($.get('https://diagroo.couchappy.com/diagroo/' + currentConnection._id).responseText);
+		var connection = JSON.parse($.get(mainURL+'/diagroo/' + currentConnection._id).responseText);
 		if (connection.error && connection.error == "not_found") {
 			for (var j = 0; j < draw2DConnections.getSize(); j++) {
 				var currentDraw2DConnection = draw2DConnections.get(j);
