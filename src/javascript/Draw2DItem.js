@@ -267,7 +267,7 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 		c.setTargetDecorator(new draw2d.decoration.connection.ArrowDecorator());
 		canvas.addFigure(c);
 		
-		var layerId = $("#layersSelect option:selected").val(); // get the current layer selected by the user
+		var layerId = $("#layersSelect option:first").val(); // get the current layer first by the user
 		var newConnection = new Connection(c.id, connectorB.id, connectorA.id, layerId, c.getText());
 		connections.add(newConnection);
 		draw2DConnections.add(c);

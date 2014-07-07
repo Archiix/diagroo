@@ -61,7 +61,7 @@ function getViews(modelId, viewsSelectHTML) {
 	for (var i = 0; i < views.rows.length; i++) {
 		var view = views.rows[i];
 		var id = view.id;
-		var text = view.value;
+		var text = view.value.name;
 		viewsSelectHTML.append('<option value="' + id + '">' + text + '</option>');
 	}
 }

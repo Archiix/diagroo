@@ -170,7 +170,7 @@ function removeConnectionToCanvas(draw2DConnection, canvas, connections, draw2DC
 
 function removeSynchronous(id, rev) {
 	$.ajax({
-		url: "https://diagroo.couchappy.com/diagroo/" + id + "?rev=" + rev,
+		url: mainURL+"/diagroo/" + id + "?rev=" + rev,
 		type: "DELETE",
 		async: false,
 		success: function(result) {

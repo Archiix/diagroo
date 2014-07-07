@@ -545,7 +545,7 @@
 			$( "#slider3" ).slider({
 				min: 2,
 				max: 50,
-				values: [12],
+				values: [20],
 				slide: function(event, ui) {
 					var value = ui.value;
 					processingInstance.setFontSize(value);
@@ -1004,6 +1004,18 @@
 			$("#saveButton").click(function() {
 				Processing.getInstanceById('sketch').save('test.png');
 			});;
+			$("#deleteModelButton").click(function() {
+				var result = confirm("Do you really want to delete the model ?");
+				if (result) {
+					var modelId = $("#modelsSelect option:selected").val();
+					deleteModel(modelId);
+				}
+			});
+			$("#deleteViewButton").click(function() {
+				var result = confirm("Do you really want to delete the view ?");
+				if (result) {
+				}
+			});
 		});
 		</script>
 		<!-- GUI + CouchDB calls -->
@@ -1015,6 +1027,8 @@
 		<script type="text/javascript" src="src/javascript/DeleteItemGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/DeleteConnectorGUI.js"></script>
 		<script type="text/javascript" src="src/javascript/DeleteConnectionGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/DeleteModelGUI.js"></script>
+		<script type="text/javascript" src="src/javascript/DeleteViewGUI.js"></script>
 	</head>
 	<body>
 		<div class="container-fluid">
@@ -1034,7 +1048,7 @@
 			<button id="saveModelButton" class="btn btn-primary">Save/Update Model</button>
 			<button id="saveViewButton" class="btn btn-primary">Save/Update View</button>
 			<!-- <button id="clearButton" class="btn btn-primary">Clear</button> -->
-			<!-- <button id="resetButton" class="btn btn-primary">Reset</button> -->
+			<button id="resetButton" class="btn btn-danger">Reset</button>
 			<span id="loadingBox" style="display: none;">Loading ...<img src="src/css/img/ajax-loader.gif" alt="ajax-loader.gif" /></span>
 		</div>
 		</div>
@@ -1046,19 +1060,25 @@
 					<select id="modelsSelect">
 						<option value="">No Models</option>
 					</select>
+					<button type="button" class="btn btn-danger btn-xs" id="deleteModelButton">
+						<span class="glyphicon glyphicon-remove"></span>
+					</button>
 					<strong>Views</strong>
 					<select id="viewsSelect">
 						<option value="">No Views</option>
 					</select>
-					<button id="to3DButton" class="btn btn-primary">To 3D</button>
+					<button type="button" class="btn btn-danger btn-xs" id="deleteViewButton">
+						<span class="glyphicon glyphicon-remove"></span>
+					</button>
+					<button id="to3DButton" class="btn btn-default" style="width: 100%; margin-top: 10px;">3D</button>
 					<strong>Layers</strong>
-					<select id="layersSelect" multiple="multiple">
+					<select id="layersSelect" multiple="multiple" style="width: 100%;">
 						<option value="">No Layers</option>
 					</select>
 				</div>
 				<div class="col-md-1" style="padding: 0 10px 0 10px">
 					<strong>Items</strong>
-					<select id="itemsSelect" multiple="multiple" style="height: 630px;">
+					<select id="itemsSelect" multiple="multiple" style="width: 100%; height: 630px;">
 						<option value="">No Items</option>
 					</select>
 				</div>
@@ -1075,7 +1095,7 @@
 						<td><div id="slider1" class="slider"></div></td>
 						<td class="rightCell"><span>Item Height (<span id="itemHeight">100</span> Pixels): </span></td>
 						<td><div id="slider2" class="slider"></div></td>
-						<td class="rightCell"><span>Text Size (<span id="textSizeSpan">12</span> Pixels): </span></span></td>
+						<td class="rightCell"><span>Text Size (<span id="textSizeSpan">20</span> Pixels): </span></span></td>
 						<td><div id="slider3" class="slider"></div></td>
 						<td class="centerCell">
 							<button id="saveButton" class="btn btn-default">Save as Image</button>
