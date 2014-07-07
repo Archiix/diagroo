@@ -174,6 +174,8 @@ class Label {
 
 PFont font;
 
+/* @pjs font="DosisMedium.ttf"; */
+
 void setup() {
   size(wWidth, wHeight, OPENGL);
   
@@ -184,7 +186,7 @@ void setup() {
   colors[4] = new Color(255, 239, 223);
   colors[5] = new Color(163, 54, 91);
   
-  font = createFont("arial", 32, false);
+  font = createFont("DosisMedium.ttf", 54, false);
 
   textFont(font);
   textAlign(CENTER);
