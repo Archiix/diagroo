@@ -33,9 +33,10 @@ float camUpY = 1;
 float camUpZ = 0;
 
 //Polar coordinates
-float theta = 0;      
-float phi = 90;       
-float rho = 15000;   //distance from cam to point of view
+float theta = -40;
+float phi = 60;
+float initialRho = 30000;   //distance from cam to point of view
+float rho = initialRho;
 
 float dw = 0.0;
 float dh = 0.0;
@@ -248,12 +249,12 @@ void draw() {
   noSmooth();
   updateCamPosition();
   camera(camEyeX, camEyeY, camEyeZ, viewX, viewY, viewZ, camUpX, camUpY, camUpZ);
-  
+
   float fov = PI / 100.0;
   float cameraZ = (height/2.0) / tan(fov/2.0);
   perspective(fov, float(width)/float(height),cameraZ/10.0,cameraZ*10.0);
   
-  textSize(fontSize);
+  textSize(fontSize * rho / initialRho);
   
   ArrayList labels = new ArrayList();
   
@@ -381,6 +382,10 @@ void mouseDragged() {
     phi = phi - (pmouseX - mouseX);
   }
   if (mouseButton == RIGHT) {
-    rho = rho - (pmouseY - mouseY) * 10.0;    
+    rho = rho - (pmouseY - mouseY) * 10.0;
   }
+}
+
+void zoom(value) {
+    rho = rho -value * 10;
 }
