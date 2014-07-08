@@ -14,25 +14,18 @@ function getModels(modelsSelectHTML) {
 	}
 }
 
-function getItems(modelId, itemsSelectHTML) {
-	couchDBJQuery.couch.db("diagroo").view("model/getItemsByModel", {
-		success: function(data) {
-			itemsSelectHTML.empty();
-			var itemsList = data.rows;
-			if (itemsList.length == 0) {
-				itemsSelectHTML.append('<option value="">No Items</option>');
-			}
-			for (var i = 0; i < itemsList.length; i++) {
-				var id = itemsList[i].id;
-				var text = itemsList[i].value
-				itemsSelectHTML.append('<option value="' + id + '">' + text + '</option>');
-			}
-		},
-		error: function(status) {
-			console.log(status);
-		},
-		key: modelId
-	});
+function getItems(modelId, layerId, itemsSelectHTML) {
+	$.ajaxSetup({async:false});
+	var items = JSON.parse($.get(mainURL+'/diagroo/_design/model/_view/getItemsByModel', {key: '["'+modelId+'","'+layerId+'"]'}).responseText);
+	itemsSelectHTML.empty();
+	if (items.rows.length == 0) {
+		itemsSelectHTML.append('<option value="">No Items</option>');
+	}
+	for (var i = 0; i < items.rows.length; i++) {
+		var id = items.rows[i].id;
+		var text = items.rows[i].value;
+		itemsSelectHTML.append('<option value="'+id+'">'+text+'</option>');
+	}
 }
 
 function getLayers(modelId, layersSelectHTML) {
@@ -47,7 +40,11 @@ function getLayers(modelId, layersSelectHTML) {
 		var layer = layers.rows[i];
 		var id = layer.id;
 		var text = layer.value.name + ' - ' + layer.value.index;
-		layersSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+		if (i == 0) {
+			layersSelectHTML.append('<option value="' + id + '" selected="selected">' + text + '</option>');
+		} else {
+			layersSelectHTML.append('<option value="' + id + '">' + text + '</option>');
+		}
 	}
 }
 

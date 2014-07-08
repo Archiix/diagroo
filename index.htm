@@ -507,9 +507,10 @@
 				getModels($("#modelsSelect"));
 				modelId = $("#modelsSelect option:first").val();
 			}
-			getItems(modelId, $("#itemsSelect"));
 			getViews(modelId, $("#viewsSelect"));
 			getLayers(modelId, $("#layersSelect"));
+			var firstLayerId = $("#layersSelect option:first").val();
+			getItems(modelId, firstLayerId, $("#itemsSelect"));
 			
 			var firstViewId = $("#viewsSelect option:first").val();
 			var firstLayerId = $("#layersSelect option:first").val();
@@ -801,10 +802,23 @@
 			// Load all models
 			loadModel("");
 			
-			/* modelsSelect click event */
+			/* modelsSelect change event */
 			$("#modelsSelect").change(function() {
 				var modelId = $("#modelsSelect option:selected").val(); // model id
 				loadModel(modelId);
+			});
+			/* viewsSelect change event */
+			$("#viewsSelect").change(function() {
+				clearCanvas();
+				var viewId = $("#viewsSelect option:selected").val();
+				var layerId = $("#layersSelect option:first").val();
+				loadView(layerId, viewId, items, connections, draw2DConnections, canvas);
+			});
+			/* layersSelect change event */
+			$("#layersSelect").change(function() {
+				var modelId = $("#modelsSelect option:selected").val();
+				var layerId = $("#layersSelect option:selected").val();
+				getItems(modelId, layerId, $("#itemsSelect"));
 			});
 			/* itemsSelect double click event */
 			$("#itemsSelect").dblclick(function() {
@@ -867,9 +881,7 @@
 							}
 						break;
 					case false:
-						// Méga bricolage !!!
-						$("#loadingBox").show();
-						setTimeout(function() { loadView(layerId, viewId, items, connections, draw2DConnections, canvas); $("#loadingBox").hide(); }, 10);
+						loadView(layerId, viewId, items, connections, draw2DConnections, canvas);
 						break;
 				}
 			});
@@ -889,14 +901,15 @@
 			/* newLayerButton click event */
 			$("#newLayerButton").click(function() {
 				var modelId = $("#modelsSelect option:selected").val();
+				var nbLayers = JSON.parse($.get(mainURL+'/diagroo/_design/layer/_view/getLayersByModel', {'key': '"'+modelId+'"'}).responseText).rows.length;
 				var layerName = $("#layerNameInput").val();
 				var layerId = couchDBJQuery.couch.newUUID();
-				var params = layerName.split(';');
-				if (!displayErrorMessages([layerName, params[0], params[1]], ['layer name', 'layer name', 'layer index'])) {
+				if (!displayErrorMessages([layerName, modelId], ['layer name', 'model id'])) {
 					return;
 				}
-				var newLayer = new Layer(layerId, modelId, params[0], parseInt(params[1]));
-				$("#layersSelect").append('<option value="'+layerId+'">'+params[0]+'</option>');
+				var index = nbLayers;
+				var newLayer = new Layer(layerId, modelId, layerName, index);
+				$("#layersSelect").append('<option value="'+layerId+'">'+layerName+' - '+index+'</option>');
 				save(newLayer);
 			});
 			/* newViewButton click event */
@@ -911,7 +924,19 @@
 				$("#viewsSelect").append('<option value="'+viewId+'">'+viewName+'</option>');
 				save(newView);
 			});
+			/* saveButton click event */
+			$("#saveButton").click(function() {
+				var modelId = $("#modelsSelect option:selected").val();
+				var layerId = $("#layersSelect option:selected").val();
+				var viewId = $("#viewsSelect option:selected").val();
+				if (!displayErrorMessages([modelId, layerId, viewId], ['model id', 'layer id', 'view id'])) {
+					return;
+				}
+				saveUpdateModel(modelId, layerId, items, connections, draw2DConnections);
+				saveUpdateView(layerId, viewId, items, connections);
+			});
 			/* saveModelButton click event */
+			/*
 			$("#saveModelButton").click(function() { // save or update an existing model
 				var modelId = $("#modelsSelect option:selected").val();
 				var layerId = $("#layersSelect option:selected").val();
@@ -920,7 +945,9 @@
 				}
 				saveUpdateModel(modelId, layerId, items, connections, draw2DConnections);
 			});
+			*/
 			/* saveViewButton click event */
+			/*
 			$("#saveViewButton").click(function() { // save or update an existing view
 				// ***View référence un objet Layer
 				// ***View référence un objet View
@@ -935,6 +962,7 @@
 					saveUpdateView(layerId, viewId, items, connections);
 				}
 			});
+			*/
 			/* clearButton click event */
 			$("#clearButton").click(function() {
 				clearCanvas();
@@ -1001,7 +1029,7 @@
 				var area = $("#area");
 				area.css('display', 'none');
 			});
-			$("#saveButton").click(function() {
+			$("#saveToImageButton").click(function() {
 				Processing.getInstanceById('sketch').save('test.png');
 			});;
 			$("#deleteModelButton").click(function() {
@@ -1009,11 +1037,15 @@
 				if (result) {
 					var modelId = $("#modelsSelect option:selected").val();
 					deleteModel(modelId);
+					loadModel("");
 				}
 			});
 			$("#deleteViewButton").click(function() {
 				var result = confirm("Do you really want to delete the view ?");
 				if (result) {
+					var viewId = $("#viewsSelect option:selected").val();
+					deleteView(viewId);
+					loadModel("");
 				}
 			});
 		});
@@ -1034,20 +1066,22 @@
 		<div class="container-fluid">
 		<div class="row">
 		<div class="col-md-2">
-			<div id="mainTitle">diagroo</div>
+			<h1 style="text-align:center;color:#fff;background-color:#428bca;border-color:#357ebd;padding: 5px 0 5px 0;border-radius: 20px;text-shadow:1px 1px #444">Diagroo</h1>
 		</div>
 		<div class="col-md-10" style="padding: 0;">
 		<div id="nav">
 			<button id="newItemButton" class="btn btn-primary">New Item</button>
 			<button id="newModelButton" class="btn btn-primary">New Model</button>
-			<input type="text" id="modelNameInput" value="model name" />
+			<input type="text" id="modelNameInput" placeholder="model name" />
 			<button id="newLayerButton" class="btn btn-primary">New Layer</button>
-			<input type="text" id="layerNameInput" value="layer name" />
+			<input type="text" id="layerNameInput" placeholder="layer name" />
 			<button id="newViewButton" class="btn btn-primary">New View</button>
-			<input type="text" id="viewNameInput" value="view name" />
-			<button id="saveModelButton" class="btn btn-primary">Save/Update Model</button>
-			<button id="saveViewButton" class="btn btn-primary">Save/Update View</button>
+			<input type="text" id="viewNameInput" placeholder="view name" />
+			<button id="saveButton" class="btn btn-primary">Save</button>
+			<!-- <button id="saveModelButton" class="btn btn-primary">Save/Update Model</button> -->
+			<!-- <button id="saveViewButton" class="btn btn-primary">Save/Update View</button> -->
 			<!-- <button id="clearButton" class="btn btn-primary">Clear</button> -->
+			<button id="to3DButton" class="btn btn-default">3D</button>
 			<button id="resetButton" class="btn btn-danger">Reset</button>
 			<span id="loadingBox" style="display: none;">Loading ...<img src="src/css/img/ajax-loader.gif" alt="ajax-loader.gif" /></span>
 		</div>
@@ -1070,7 +1104,6 @@
 					<button type="button" class="btn btn-danger btn-xs" id="deleteViewButton">
 						<span class="glyphicon glyphicon-remove"></span>
 					</button>
-					<button id="to3DButton" class="btn btn-default" style="width: 100%; margin-top: 10px;">3D</button>
 					<strong>Layers</strong>
 					<select id="layersSelect" multiple="multiple" style="width: 100%;">
 						<option value="">No Layers</option>
@@ -1098,7 +1131,7 @@
 						<td class="rightCell"><span>Text Size (<span id="textSizeSpan">20</span> Pixels): </span></span></td>
 						<td><div id="slider3" class="slider"></div></td>
 						<td class="centerCell">
-							<button id="saveButton" class="btn btn-default">Save as Image</button>
+							<button id="saveToImageButton" class="btn btn-default">Save as Image</button>
 							<button id="closeButton" class="btn btn-danger">Close</button>
 						</td>
 					</tr>
