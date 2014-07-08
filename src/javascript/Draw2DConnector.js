@@ -71,6 +71,9 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 					case "nextFace":
 						this.nextFace();
 						break;
+					case "previousFace":
+						// TODO 08.07.2014
+						break;
 					default:
 						break;
 				}
@@ -80,7 +83,9 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 			items: {
 				"removeFromView": {name: "Remove From View", icon: ""},
 				"remove": {name: "Remove", icon: ""},
-				"nextFace": {name: "Next Face", icon: ""}
+				"sep1": "---------",
+				"nextFace": {name: "Next Face", icon: ""},
+				"previousFace": {name: "Previous Face", icon: ""}
 			}
 		});
 	},
@@ -186,5 +191,11 @@ var Draw2DConnector = draw2d.shape.basic.Rectangle.extend({
 				break;
 		}
 		return this.port;
+	},
+	
+	setLayerStyle: function() {
+		var alpha = 0.1;
+		this.setAlpha(alpha);
+		this.label.setAlpha(alpha);
 	}
 });

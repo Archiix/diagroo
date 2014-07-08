@@ -211,7 +211,9 @@ void performeGravityCenter() {
 	  if (item.getY() > maxY) maxY = item.getY() + item.getHeight();
 	  nbItems++;
 	}
-    sumZ += i * spaceBetweenLayer;
+	if (items.size() > 0) {
+	  sumZ += i * spaceBetweenLayer;
+	}
   }
   dw = minX + maxX / 2.0;
   dh = minY + maxY / 2.0;

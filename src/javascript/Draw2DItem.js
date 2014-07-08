@@ -93,15 +93,15 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 	
 	/* awesome */
 	onOtherFigureIsMoving:function(figure) {
-		// console.log(figure.getText());
+		console.log(figure.getText());
 		this.upperLayerItem = null;
 		if (layerMode) { // chercher dans items => List of Draw2DItem
-			for (var i = 0; i < items.getSize(); i++) {
-				var currentItem = items.get(i);
+			for (var i = 0; i < itemsTransparents.getSize(); i++) {
+				var currentItem = itemsTransparents.get(i);
 				currentItem.clearBorder();
 			}
-			for (var i = 0; i < items.getSize(); i++) {
-				var currentItem = items.get(i);
+			for (var i = 0; i < itemsTransparents.getSize(); i++) {
+				var currentItem = itemsTransparents.get(i);
 				var x1 = currentItem.getAbsoluteX();
 				var y1 = currentItem.getAbsoluteY();
 				var x2 = this.getAbsoluteX();
@@ -150,28 +150,22 @@ var Draw2DItem = draw2d.shape.basic.Rectangle.extend({
 				default:
 					break;
 			}
-			this.repaint();
 		}
+		this.repaint();
 	},
 	
 	setLayerStyle: function() {
-		console.log("[Draw2DItem] setLayerStyle");
 		var alpha = 0.1;
 		this.setAlpha(alpha);
 		this.label.setAlpha(alpha);
 		for (var i = 0; i < this.connectors.getSize(); i++) {
-			this.connectors.get(i).setAlpha(alpha);
+			this.connectors.get(i).setLayerStyle();
 		}
-		/*
-		this.northPort.setAlpha(0.5);
-		this.southPort.setAlpha(0.5);
-		this.westPort.setAlpha(0.5);
-		this.eastPort.setAlpha(0.5);
-		*/
-		this.northPort.setVisible(false);
-		this.southPort.setVisible(false);
-		this.westPort.setVisible(false);
-		this.eastPort.setVisible(false);
+		this.northPort.setAlpha(0);
+		this.southPort.setAlpha(0);
+		this.westPort.setAlpha(0);
+		this.eastPort.setAlpha(0);
+		
 		this.setDraggable(false);
 	},
 	
