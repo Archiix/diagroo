@@ -1,6 +1,7 @@
 
-couchDBJQuery.couch.urlPrefix = "http://localhost:5984";
+// couchDBJQuery.couch.urlPrefix = "http://localhost:5984";
 // couchDBJQuery.couch.urlPrefix = "https://diagroo.couchappy.com";
+// couchDBJQuery.couch.urlPrefix = mainURL;
 
 // get a new UUID from CouchDB
 function newUUID() {

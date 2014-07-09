@@ -572,6 +572,7 @@
 			
 			/* var */ // mainURL = "https://diagroo.couchappy.com";
 			/* var */ mainURL = "http://localhost:5984";
+			couchDBJQuery.couch.urlPrefix = mainURL;
 			
 			/* var */ itemsTransparents = new draw2d.util.ArrayList();
 			/* var */ connectionsTransparents = new draw2d.util.ArrayList();
@@ -776,6 +777,7 @@
 				oldX = bestFigure.getX();
 				oldY = bestFigure.getY();
 			};
+			// bind the items through layer !!!
 			policy.onMouseUp = function(c, x, y, shiftKey, ctrlKey) {
 				$.ajaxSetup({async:false});
 				var bestFigure = canvas.getBestFigure(x, y);
@@ -1124,8 +1126,9 @@
 			<!-- <button id="saveViewButton" class="btn btn-primary">Save/Update View</button> -->
 			<!-- <button id="clearButton" class="btn btn-primary">Clear</button> -->
 			<button id="to3DButton" class="btn btn-default">3D</button>
-			<button id="resetButton" class="btn btn-danger">Reset</button>
+			<!-- <button id="resetButton" class="btn btn-danger">Reset</button> -->
 			<!-- <span id="loadingBox" style="display: none;">Loading ...<img src="src/css/img/ajax-loader.gif" alt="ajax-loader.gif" /></span> -->
+			<!-- <img src="he_arc.jpg" alt="he_arc_logo" /> -->
 		</div>
 		</div>
 		</div>
