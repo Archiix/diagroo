@@ -519,6 +519,14 @@
 		}
 		
 		$(window).load(function() {
+			var navBar = $("#nav");
+			var doc = $(document);
+			var navBarWidth = navBar.width();
+			var navBarHeight = navBar.outerHeight(true);
+			var documentWidth = doc.width();
+			var documentHeight = doc.height();
+			$("#gfx_holder").height(documentHeight - navBarHeight);
+			
 			$("#gfx_holder").css('cursor', 'move');
 			
 			$( "#slider1" ).slider({
@@ -569,6 +577,7 @@
 			/* var */ draw2DConnections = new draw2d.util.ArrayList();
 			/* var */ // nextDraw2DConnections = new draw2d.util.ArrayList();
 			/* var */ canvas = new draw2d.Canvas("gfx_holder");
+			canvas.setScrollArea("#scrollArea");
 			
 			/* var */ // mainURL = "https://diagroo.couchappy.com";
 			/* var */ mainURL = "http://localhost:5984";
@@ -1157,7 +1166,7 @@
 				</div>
 				<div class="col-md-1" style="padding: 0 10px 0 10px">
 					<strong>Items</strong>
-					<select id="itemsSelect" multiple="multiple" style="width: 100%; height: 630px;">
+					<select id="itemsSelect" multiple="multiple" style="width: 100%; height: 400px;">
 						<option value="">No Items</option>
 					</select>
 				</div>
